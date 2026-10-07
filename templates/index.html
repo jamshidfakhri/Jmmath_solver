@@ -3,7 +3,52 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>THE SOLVER — Mysterious Math Engine</title>
+
+<!-- ============ SEO ============ -->
+<title>THE SOLVER — Free Online Math Problem Solver</title>
+<meta name="description" content="Solve any math problem instantly. Step-by-step solutions for algebra, calculus, trigonometry, and more. Free AI-powered math engine with four different models.">
+<meta name="keywords" content="math solver, equation solver, algebra, calculus, trigonometry, free math help, step by step solutions, AI math">
+<meta name="author" content="JMFakhri">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="{{ site_url }}/">
+
+<!-- ============ Open Graph (Facebook, LinkedIn, ...) ============ -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="{{ site_url }}/">
+<meta property="og:title" content="THE SOLVER — Free Online Math Problem Solver">
+<meta property="og:description" content="Solve any math problem instantly. Step-by-step solutions for algebra, calculus, trigonometry, and more.">
+<meta property="og:site_name" content="THE SOLVER">
+
+<!-- ============ Twitter Card ============ -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="THE SOLVER — Free Online Math Problem Solver">
+<meta name="twitter:description" content="Solve any math problem instantly. Step-by-step solutions for algebra, calculus, trigonometry, and more.">
+
+<!-- ============ Favicon (SVG inline) ============ -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%230a0d12'/%3E%3Ctext x='16' y='23' font-family='serif' font-size='22' font-weight='700' fill='%23ffffff' text-anchor='middle'%3E∎%3C/text%3E%3C/svg%3E">
+
+<!-- ============ Structured Data (JSON-LD) ============ -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "THE SOLVER",
+  "url": "{{ site_url }}/",
+  "description": "Free online math problem solver with step-by-step solutions powered by AI.",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "Any",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "author": {
+    "@type": "Person",
+    "name": "JMFakhri"
+  }
+}
+</script>
+
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
@@ -95,7 +140,6 @@
             <button type="button" class="kb-tab" data-tab="log">Logs</button>
           </div>
 
-          <!-- Number pad: 6 columns, order is fixed -->
           <div class="kb-panel kb-panel-num active" data-panel="num">
             <button type="button" data-insert="7">7</button>
             <button type="button" data-insert="8">8</button>
@@ -241,11 +285,12 @@
 <footer>
   <div class="wrap">
     <div class="foot-line"></div>
-    <p>∎ Made by JMFakhri</p>
+    <p>∎ Made by JMFakhri &nbsp;·&nbsp; <a href="/about" style="color:inherit; text-decoration:underline;">About</a></p>
   </div>
 </footer>
 
 <script>
+// ... همون جاوااسکریپت قبلی، بدون تغییر
 const form = document.getElementById('solveForm');
 const questionInput = document.getElementById('question');
 const solveBtn = document.getElementById('solveBtn');
