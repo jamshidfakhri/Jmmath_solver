@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>حل‌کننده ریاضی | Math Solver</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="logo">🧮 حل‌کننده ریاضی</div>
+    <div class="lang-hint">فارسی و English</div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <h1>هر سوال ریاضی داری، بپرس!</h1>
+    <p>تایپ کن یا عکس مسئله رو آپلود کن. مرحله‌به‌مرحله برات حلش می‌کنم.</p>
+  </section>
+
+  <section class="card">
+    <form id="solveForm">
+      <div class="field">
+        <label>سوالت رو بنویس:</label>
+        <textarea id="question" name="question" placeholder="مثلاً: معادله x² + 5x + 6 = 0 رو حل کن."></textarea>
+      </div>
+
+      <div class="field">
+        <label>یا عکس مسئله رو بفرست:</label>
+        <div class="upload-area" id="uploadArea">
+          <input type="file" id="imageInput" name="image" accept="image/*" hidden>
+          <div class="upload-text">
+            <span class="upload-icon">📷</span>
+            <span>برای انتخاب عکس کلیک کن</span>
+            <span class="upload-hint">JPG, PNG - حداکثر ۲۰ مگابایت</span>
+          </div>
+          <div class="preview" id="preview"></div>
+        </div>
+      </div>
+
+      <button type="submit" class="solve-btn" id="solveBtn">
+        <span class="btn-text">حل کن</span>
+        <span class="btn-loader" hidden></span>
+      </button>
+    </form>
+  </section>
+
+  <section class="result" id="result" hidden>
+    <div class="result-head">
+      <h2>پاسخ:</h2>
+      <button class="copy-btn" id="copyBtn" title="کپی">📋</button>
+    </div>
+    <div class="result-body" id="resultBody"></div>
+  </section>
+
+  <section class="error" id="errorBox" hidden></section>
+</main>
+
+<footer>
+  <p>ساخته شده با پایتون و Groq AI</p>
+</footer>
+
+<script>
+const form = document.getElementById('solveForm');
+const questionInput = document.getElementById('question');
+const imageInput = document.getElementById('imageInput');
+const uploadArea = document.getElementById('uploadArea');
+const preview = document.getElementById('preview');
+const solveBtn = document.getElementById('solveBtn');
+const btnText = solveBtn.querySelector('.btn-text');
+const btnLoader = solveBtn.querySelector('.btn-loader');
+const resultSection = document.getElementById('result');
+const resultBody = document.getElementById('resultBody');
+const errorBox = document.getElementById('errorBox');
+const copyBtn = document.getElementById('copyBtn');
+
+uploadArea.addEventListener('click', () => imageInput.click());
+
+imageInput.addEventListener('change', () => {
+  const file = imageInput.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    preview.innerHTML = `<img src="${e.target.result}" alt="preview">`;
+    preview.style.display = 'block';
+    uploadArea.querySelector('.upload-text').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+});
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  errorBox.hidden = true;
+  resultSection.hidden = true;
+
+  const question = questionInput.value.trim();
+  const hasImage = imageInput.files.length > 0;
+
+  if (!question && !hasImage) {
+    showError('سوال یا عکس رو وارد کن.');
+    return;
+  }
+
+  solveBtn.disabled = true;
+  btnText.hidden = true;
+  btnLoader.hidden = false;
+
+  const formData = new FormData();
+  if (question) formData.append('question', question);
+  if (hasImage) formData.append('image', imageInput.files[0]);
+
+  try {
+    const res = await fetch('/api/solve', { method: 'POST', body: formData });
+    const data = await res.json();
+
+    if (data.ok) {
+      resultBody.innerHTML = formatAnswer(data.answer);
+      resultSection.hidden = false;
+      resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      showError(data.error || 'خطایی پیش اومد.');
+    }
+  } catch (err) {
+    showError('خطای شبکه. دوباره امتحان کن.');
+  } finally {
+    solveBtn.disabled = false;
+    btnText.hidden = false;
+    btnLoader.hidden = true;
+  }
+});
+
+function formatAnswer(text) {
+  let html = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/`(.+?)`/g, '<code>$1</code>')
+    .replace(/\n/g, '<br>');
+  return html;
+}
+
+function showError(msg) {
+  errorBox.textContent = '⚠️ ' + msg;
+  errorBox.hidden = false;
+}
+
+copyBtn.addEventListener('click', () => {
+  navigator.clipboard.writeText(resultBody.innerText);
+  copyBtn.textContent = '✅';
+  setTimeout(() => copyBtn.textContent = '📋', 1500);
+});
+</script>
+
+</body>
+</html>
