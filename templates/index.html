@@ -166,19 +166,6 @@
         </div>
       </div>
 
-      <div class="field">
-        <label for="imageInput">Or submit an image</label>
-        <div class="upload-area" id="uploadArea">
-          <input type="file" id="imageInput" name="image" accept="image/*" hidden>
-          <div class="upload-text">
-            <span class="upload-icon">◇</span>
-            <span class="upload-main">Click to select a photo</span>
-            <span class="upload-hint">JPG · PNG · Max 20 MB</span>
-          </div>
-          <div class="preview" id="preview"></div>
-        </div>
-      </div>
-
       <button type="submit" class="solve-btn" id="solveBtn">
         <span class="btn-text" id="btnText">REVEAL THE ANSWER</span>
         <span class="btn-loader" hidden></span>
@@ -223,9 +210,6 @@
 <script>
 const form = document.getElementById('solveForm');
 const questionInput = document.getElementById('question');
-const imageInput = document.getElementById('imageInput');
-const uploadArea = document.getElementById('uploadArea');
-const preview = document.getElementById('preview');
 const solveBtn = document.getElementById('solveBtn');
 const btnText = document.getElementById('btnText');
 const btnLoader = solveBtn.querySelector('.btn-loader');
@@ -243,7 +227,6 @@ const clearChatBtn = document.getElementById('clearChatBtn');
 
 let selectedEngine = 'lightning';
 let currentMode = 'solve';
-let lastAnswer = '';
 let sessionId = localStorage.getItem('solver_session') || ('s_' + Math.random().toString(36).substring(2, 12));
 localStorage.setItem('solver_session', sessionId);
 
@@ -337,25 +320,7 @@ clearInputBtn.addEventListener('click', () => {
   questionInput.value = '';
   questionInput.style.height = '';
   autoResize();
-  imageInput.value = '';
-  preview.style.display = 'none';
-  preview.innerHTML = '';
-  uploadArea.querySelector('.upload-text').style.display = 'flex';
   questionInput.focus();
-});
-
-/* ============ Upload ============ */
-uploadArea.addEventListener('click', () => imageInput.click());
-imageInput.addEventListener('change', () => {
-  const file = imageInput.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    preview.innerHTML = `<img src="${e.target.result}" alt="preview">`;
-    preview.style.display = 'block';
-    uploadArea.querySelector('.upload-text').style.display = 'none';
-  };
-  reader.readAsDataURL(file);
 });
 
 /* ============ History ============ */
@@ -385,7 +350,6 @@ function renderHistory() {
       autoResize();
       resultBody.innerHTML = formatAnswer(item.a);
       resultSection.hidden = false;
-      lastAnswer = item.a;
       tryPlotGraph(item.q);
       setTimeout(renderMath, 50);
       resultSection.scrollIntoView({behavior: 'smooth', block: 'start'});
@@ -452,8 +416,7 @@ form.addEventListener('submit', async (e) => {
   graphWrap.hidden = true;
 
   const question = questionInput.value.trim();
-  const hasImage = imageInput.files.length > 0;
-  if (!question && !hasImage) { showError('Provide a question or an image.'); return; }
+  if (!question) { showError('Type your problem first.'); return; }
 
   solveBtn.disabled = true;
   btnText.textContent = 'CALCULATING';
@@ -465,17 +428,15 @@ form.addEventListener('submit', async (e) => {
   btnLoader.hidden = false;
 
   const fd = new FormData();
-  if (question) fd.append('question', question);
+  fd.append('question', question);
   fd.append('engine', selectedEngine);
   fd.append('mode', currentMode);
   fd.append('session_id', sessionId);
-  if (hasImage) fd.append('image', imageInput.files[0]);
 
   try {
     const res = await fetch('/api/solve', { method: 'POST', body: fd });
     const data = await res.json();
     if (data.ok) {
-      lastAnswer = data.answer;
       resultBody.innerHTML = formatAnswer(data.answer);
       resultSection.hidden = false;
       resultSection.scrollIntoView({behavior: 'smooth', block: 'start'});
