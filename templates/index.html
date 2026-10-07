@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>THE SOLVER — Mysterious Math Engine</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
@@ -38,6 +38,36 @@
   <section class="card">
     <div class="card-head">
       <span class="card-num">I</span>
+      <span class="card-title">Choose Your Engine</span>
+    </div>
+
+    <div class="engines" id="engines">
+      <button type="button" class="engine-btn active" data-engine="lightning">
+        <span class="eng-icon">⚡</span>
+        <span class="eng-name">Lightning</span>
+        <span class="eng-sub">Fast · Groq</span>
+      </button>
+      <button type="button" class="engine-btn" data-engine="reasoning">
+        <span class="eng-icon">🧠</span>
+        <span class="eng-name">Reasoning</span>
+        <span class="eng-sub">Deep logic · Groq</span>
+      </button>
+      <button type="button" class="engine-btn" data-engine="gemini">
+        <span class="eng-icon">🌐</span>
+        <span class="eng-name">Gemini</span>
+        <span class="eng-sub">Google · OpenRouter</span>
+      </button>
+      <button type="button" class="engine-btn" data-engine="deepseek">
+        <span class="eng-icon">🔷</span>
+        <span class="eng-name">DeepSeek</span>
+        <span class="eng-sub">Math specialist</span>
+      </button>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <span class="card-num">II</span>
       <span class="card-title">Enter Your Equation</span>
     </div>
 
@@ -154,7 +184,7 @@
 
   <section class="result" id="result" hidden>
     <div class="card-head">
-      <span class="card-num">II</span>
+      <span class="card-num">III</span>
       <span class="card-title">The Revelation</span>
       <button class="copy-btn" id="copyBtn" title="Copy">⧉</button>
     </div>
@@ -185,6 +215,19 @@ const resultBody = document.getElementById('resultBody');
 const errorBox = document.getElementById('errorBox');
 const copyBtn = document.getElementById('copyBtn');
 
+let selectedEngine = 'lightning';
+
+/* ============ انتخاب موتور ============ */
+document.querySelectorAll('.engine-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (btn.disabled) return;
+    document.querySelectorAll('.engine-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedEngine = btn.getAttribute('data-engine');
+  });
+});
+
+/* ============ کیبورد ریاضی ============ */
 document.querySelectorAll('.kb-tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.kb-tab').forEach(t => t.classList.remove('active'));
@@ -210,6 +253,7 @@ function insertAtCursor(textarea, text) {
   textarea.focus();
 }
 
+/* ============ آپلود عکس ============ */
 uploadArea.addEventListener('click', () => imageInput.click());
 
 imageInput.addEventListener('change', () => {
@@ -224,6 +268,7 @@ imageInput.addEventListener('change', () => {
   reader.readAsDataURL(file);
 });
 
+/* ============ ارسال ============ */
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   errorBox.hidden = true;
@@ -243,6 +288,7 @@ form.addEventListener('submit', async (e) => {
 
   const formData = new FormData();
   if (question) formData.append('question', question);
+  formData.append('engine', selectedEngine);
   if (hasImage) formData.append('image', imageInput.files[0]);
 
   try {
