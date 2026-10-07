@@ -6,6 +6,7 @@ from groq import Groq
 from openai import OpenAI
 
 app = Flask(__name__)
+app.secret_key = os.environ.get("SECRET_KEY", "solver-secret-xyz")
 
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
@@ -16,32 +17,11 @@ openrouter_client = OpenAI(
     api_key=OPENROUTER_API_KEY
 ) if OPENROUTER_API_KEY else None
 
-# ============ Engines ============
 ENGINES = {
-    "lightning": {
-        "name": "Lightning",
-        "provider": "groq",
-        "text_model": "openai/gpt-oss-120b",
-        "vision_model": "qwen/qwen3.6-27b",
-    },
-    "reasoning": {
-        "name": "Reasoning",
-        "provider": "groq",
-        "text_model": "deepseek-r1-distill-llama-70b",
-        "vision_model": "qwen/qwen3.6-27b",
-    },
-    "gemini": {
-        "name": "Gemini",
-        "provider": "openrouter",
-        "text_model": "google/gemini-2.0-flash-exp:free",
-        "vision_model": "google/gemini-2.0-flash-exp:free",
-    },
-    "deepseek": {
-        "name": "DeepSeek",
-        "provider": "openrouter",
-        "text_model": "deepseek/deepseek-chat:free",
-        "vision_model": "deepseek/deepseek-chat:free",
-    },
+    "lightning": {"provider": "groq", "text": "openai/gpt-oss-120b", "vision": "qwen/qwen3.6-27b"},
+    "reasoning": {"provider": "groq", "text": "deepseek-r1-distill-llama-70b", "vision": "qwen/qwen3.6-27b"},
+    "gemini": {"provider": "openrouter", "text": "google/gemini-2.0-flash-exp:free", "vision": "google/gemini-2.0-flash-exp:free"},
+    "deepseek": {"provider": "openrouter", "text": "deepseek/deepseek-chat:free", "vision": "deepseek/deepseek-chat:free"},
 }
 
 SYSTEM_PROMPT = """You are a mathematics solver. Your ONLY job is to solve math problems.
@@ -51,22 +31,20 @@ CRITICAL RULES:
 2. Do NOT write any explanation, no words, no sentences.
 3. NO English, NO Persian, NO text at all.
 4. Just show the equations and calculations step by step.
-5. Use LaTeX math notation (e.g., \\frac{}{}, ^{}, \\sqrt{}, \\int, etc.).
+5. Use LaTeX math notation.
 6. Wrap each step in display math delimiters: $$ ... $$
 7. At the end, write the final answer in a boxed format.
-
-Example for input "2x + 5 = 15":
-$$2x + 5 = 15$$
-$$2x = 15 - 5$$
-$$2x = 10$$
-$$x = \\frac{10}{2}$$
-$$x = 5$$
+8. If the user's input looks like a function definition (y = ..., f(x) = ...), just simplify it mathematically.
 
 REMEMBER: No words. No explanations. Only math."""
 
+# chat histories: {session_id: [messages]}
+chat_histories = {}
+MAX_HISTORY = 8
 
-def encode_image(image_file):
-    return base64.b64encode(image_file.read()).decode("utf-8")
+
+def encode_image(f):
+    return base64.b64encode(f.read()).decode("utf-8")
 
 
 @app.route("/")
@@ -76,20 +54,20 @@ def home():
 
 @app.route("/api/engines")
 def engines():
-    result = []
+    out = []
     for key, val in ENGINES.items():
-        available = False
-        if val["provider"] == "groq" and groq_client:
-            available = True
-        elif val["provider"] == "openrouter" and openrouter_client:
-            available = True
-        result.append({
-            "key": key,
-            "name": val["name"],
-            "provider": val["provider"],
-            "available": available
-        })
-    return jsonify({"engines": result})
+        available = (val["provider"] == "groq" and groq_client) or (val["provider"] == "openrouter" and openrouter_client)
+        out.append({"key": key, "provider": val["provider"], "available": bool(available)})
+    return jsonify({"engines": out})
+
+
+@app.route("/api/clear_chat", methods=["POST"])
+def clear_chat():
+    data = request.get_json() or {}
+    sid = data.get("session_id", "")
+    if sid in chat_histories:
+        del chat_histories[sid]
+    return jsonify({"ok": True})
 
 
 @app.route("/api/solve", methods=["POST"])
@@ -97,6 +75,8 @@ def solve():
     try:
         question = request.form.get("question", "").strip()
         engine_key = request.form.get("engine", "lightning").strip()
+        mode = request.form.get("mode", "solve").strip()
+        session_id = request.form.get("session_id", "").strip()
         image = request.files.get("image")
 
         if not question and not image:
@@ -106,53 +86,58 @@ def solve():
         if not engine:
             return jsonify({"error": "Unknown engine"}), 400
 
-        # ============ انتخاب کلاینت ============
         if engine["provider"] == "groq":
             if not groq_client:
-                return jsonify({"error": "Groq API key not configured"}), 500
+                return jsonify({"error": "Groq not configured"}), 500
             client = groq_client
-        elif engine["provider"] == "openrouter":
-            if not openrouter_client:
-                return jsonify({"error": "OpenRouter API key not configured"}), 500
-            client = openrouter_client
         else:
-            return jsonify({"error": "Unknown provider"}), 500
+            if not openrouter_client:
+                return jsonify({"error": "OpenRouter not configured"}), 500
+            client = openrouter_client
 
-        messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+        # ============ ساخت پیام‌ها ============
+        if mode == "chat" and session_id:
+            history = chat_histories.setdefault(session_id, [])
+            msgs = [{"role": "system", "content": SYSTEM_PROMPT}] + history
+        else:
+            msgs = [{"role": "system", "content": SYSTEM_PROMPT}]
 
         if image and image.filename:
             img_b64 = encode_image(image)
             mime = image.mimetype or "image/jpeg"
-            messages.append({
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": question if question else "Solve this math problem."},
-                    {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{img_b64}"}}
-                ]
-            })
-            model = engine["vision_model"]
+            user_content = [
+                {"type": "text", "text": question if question else "Solve this."},
+                {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{img_b64}"}}
+            ]
+            model = engine["vision"]
         else:
-            messages.append({"role": "user", "content": question})
-            model = engine["text_model"]
+            user_content = question
+            model = engine["text"]
+
+        msgs.append({"role": "user", "content": user_content})
 
         completion = client.chat.completions.create(
             model=model,
-            messages=messages,
+            messages=msgs,
             temperature=0.1,
             max_tokens=2048,
         )
-
         answer = completion.choices[0].message.content
+
+        # ذخیره در تاریخچه چت
+        if mode == "chat" and session_id:
+            history = chat_histories[session_id]
+            history.append({"role": "user", "content": question})
+            history.append({"role": "assistant", "content": answer})
+            if len(history) > MAX_HISTORY * 2:
+                chat_histories[session_id] = history[-MAX_HISTORY * 2:]
+
         return jsonify({"answer": answer, "ok": True, "engine": engine_key})
 
     except Exception as e:
-        error_detail = traceback.format_exc()
-        print("ERROR DETAIL:", error_detail, flush=True)
-        return jsonify({
-            "error": "Error while solving",
-            "detail": str(e),
-            "trace": error_detail[-500:]
-        }), 500
+        err = traceback.format_exc()
+        print("ERROR:", err, flush=True)
+        return jsonify({"error": "Error", "detail": str(e)}), 500
 
 
 @app.route("/ping")
