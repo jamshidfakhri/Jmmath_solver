@@ -1,5 +1,4 @@
 import os
-import base64
 import traceback
 from flask import Flask, render_template, request, jsonify
 from groq import Groq
@@ -17,26 +16,23 @@ openrouter_client = OpenAI(
     api_key=OPENROUTER_API_KEY
 ) if OPENROUTER_API_KEY else None
 
+# ============ Engines (Text Only) ============
 ENGINES = {
     "lightning": {
         "provider": "groq",
-        "text": "openai/gpt-oss-120b",
-        "vision": "qwen/qwen3.6-27b",
+        "model": "llama-3.3-70b-versatile",
     },
     "reasoning": {
         "provider": "groq",
-        "text": "deepseek-r1-distill-llama-70b",
-        "vision": "qwen/qwen3.6-27b",
+        "model": "deepseek-r1-distill-llama-70b",
     },
     "gemini": {
         "provider": "openrouter",
-        "text": "google/gemini-2.0-flash-exp:free",
-        "vision": "google/gemini-2.0-flash-exp:free",
+        "model": "google/gemini-2.0-flash-exp:free",
     },
     "deepseek": {
         "provider": "openrouter",
-        "text": "deepseek/deepseek-chat:free",
-        "vision": "deepseek/deepseek-chat:free",
+        "model": "deepseek/deepseek-chat:free",
     },
 }
 
@@ -55,10 +51,6 @@ REMEMBER: No words. No explanations. Only math."""
 
 chat_histories = {}
 MAX_HISTORY = 8
-
-
-def encode_image(f):
-    return base64.b64encode(f.read()).decode("utf-8")
 
 
 @app.route("/")
@@ -96,10 +88,9 @@ def solve():
         engine_key = request.form.get("engine", "lightning").strip()
         mode = request.form.get("mode", "solve").strip()
         session_id = request.form.get("session_id", "").strip()
-        image = request.files.get("image")
 
-        if not question and not image:
-            return jsonify({"error": "Provide a question or an image"}), 400
+        if not question:
+            return jsonify({"error": "Type your problem first."}), 400
 
         engine = ENGINES.get(engine_key)
         if not engine:
@@ -122,22 +113,10 @@ def solve():
         else:
             msgs = [{"role": "system", "content": SYSTEM_PROMPT}]
 
-        if image and image.filename:
-            img_b64 = encode_image(image)
-            mime = image.mimetype or "image/jpeg"
-            user_content = [
-                {"type": "text", "text": question if question else "Solve this."},
-                {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{img_b64}"}}
-            ]
-            model = engine["vision"]
-        else:
-            user_content = question
-            model = engine["text"]
-
-        msgs.append({"role": "user", "content": user_content})
+        msgs.append({"role": "user", "content": question})
 
         completion = client.chat.completions.create(
-            model=model,
+            model=engine["model"],
             messages=msgs,
             temperature=0.1,
             max_tokens=2048,
