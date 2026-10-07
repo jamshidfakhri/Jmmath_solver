@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>حل‌کننده ریاضی | Math Solver</title>
-<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<title>THE SOLVER — Mysterious Math Engine</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
@@ -12,33 +12,47 @@
 </head>
 <body>
 
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+
 <header>
   <div class="wrap">
-    <div class="logo">🧮 حل‌کننده ریاضی</div>
-    <div class="lang-hint">فارسی و English</div>
+    <div class="logo">
+      <span class="sigil">∎</span>
+      <span class="logo-text">THE SOLVER</span>
+    </div>
+    <div class="tagline">Mathematics · Undefined</div>
   </div>
 </header>
 
 <main class="wrap">
   <section class="hero">
-    <h1>هر سوال ریاضی داری، بپرس!</h1>
-    <p>تایپ کن یا عکس مسئله رو آپلود کن. مرحله‌به‌مرحله برات حلش می‌کنم.</p>
+    <div class="hero-sigil">⧫</div>
+    <h1>Every equation has an answer.</h1>
+    <p>Submit your question. The engine will reveal the path step by step.</p>
+    <div class="hero-divider">
+      <span></span><span class="dot">◆</span><span></span>
+    </div>
   </section>
 
   <section class="card">
+    <div class="card-head">
+      <span class="card-num">I</span>
+      <span class="card-title">Enter Your Equation</span>
+    </div>
+
     <form id="solveForm">
       <div class="field">
-        <label>سوالت رو بنویس:</label>
-        <textarea id="question" name="question" placeholder="مثلاً: 2x + 5 = 15"></textarea>
+        <label for="question">Type your problem</label>
+        <textarea id="question" name="question" placeholder="e.g., 2x + 5 = 15"></textarea>
 
-        <!-- ============ کیبورد ریاضی ============ -->
         <div class="math-kb">
           <div class="kb-tabs">
-            <button type="button" class="kb-tab active" data-tab="basic">پایه</button>
-            <button type="button" class="kb-tab" data-tab="power">توان</button>
-            <button type="button" class="kb-tab" data-tab="trig">مثلثات</button>
-            <button type="button" class="kb-tab" data-tab="calc">دیفرانسیل</button>
-            <button type="button" class="kb-tab" data-tab="log">لگاریتم</button>
+            <button type="button" class="kb-tab active" data-tab="basic">Basic</button>
+            <button type="button" class="kb-tab" data-tab="power">Powers</button>
+            <button type="button" class="kb-tab" data-tab="trig">Trigonometry</button>
+            <button type="button" class="kb-tab" data-tab="calc">Calculus</button>
+            <button type="button" class="kb-tab" data-tab="log">Logarithms</button>
           </div>
 
           <div class="kb-panel active" data-panel="basic">
@@ -116,33 +130,33 @@
             <button type="button" data-insert=",">,</button>
           </div>
         </div>
-        <!-- ============ پایان کیبورد ============ -->
       </div>
 
       <div class="field">
-        <label>یا عکس مسئله رو بفرست:</label>
+        <label for="imageInput">Or submit an image</label>
         <div class="upload-area" id="uploadArea">
           <input type="file" id="imageInput" name="image" accept="image/*" hidden>
           <div class="upload-text">
-            <span class="upload-icon">📷</span>
-            <span>برای انتخاب عکس کلیک کن</span>
-            <span class="upload-hint">JPG, PNG - حداکثر ۲۰ مگابایت</span>
+            <span class="upload-icon">◇</span>
+            <span class="upload-main">Click to select a photo</span>
+            <span class="upload-hint">JPG · PNG · Max 20 MB</span>
           </div>
           <div class="preview" id="preview"></div>
         </div>
       </div>
 
       <button type="submit" class="solve-btn" id="solveBtn">
-        <span class="btn-text">حل کن</span>
+        <span class="btn-text">REVEAL THE ANSWER</span>
         <span class="btn-loader" hidden></span>
       </button>
     </form>
   </section>
 
   <section class="result" id="result" hidden>
-    <div class="result-head">
-      <h2>پاسخ:</h2>
-      <button class="copy-btn" id="copyBtn" title="کپی">📋</button>
+    <div class="card-head">
+      <span class="card-num">II</span>
+      <span class="card-title">The Revelation</span>
+      <button class="copy-btn" id="copyBtn" title="Copy">⧉</button>
     </div>
     <div class="result-body" id="resultBody"></div>
   </section>
@@ -151,7 +165,10 @@
 </main>
 
 <footer>
-  <p>ساخته شده با پایتون و Groq AI</p>
+  <div class="wrap">
+    <div class="foot-line"></div>
+    <p>∎ Built with Python &nbsp;·&nbsp; Powered by Groq &nbsp;·&nbsp; Step into the unknown</p>
+  </div>
 </footer>
 
 <script>
@@ -168,7 +185,6 @@ const resultBody = document.getElementById('resultBody');
 const errorBox = document.getElementById('errorBox');
 const copyBtn = document.getElementById('copyBtn');
 
-/* ============ کیبورد ریاضی ============ */
 document.querySelectorAll('.kb-tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.kb-tab').forEach(t => t.classList.remove('active'));
@@ -194,7 +210,6 @@ function insertAtCursor(textarea, text) {
   textarea.focus();
 }
 
-/* ============ آپلود عکس ============ */
 uploadArea.addEventListener('click', () => imageInput.click());
 
 imageInput.addEventListener('change', () => {
@@ -209,7 +224,6 @@ imageInput.addEventListener('change', () => {
   reader.readAsDataURL(file);
 });
 
-/* ============ ارسال ============ */
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   errorBox.hidden = true;
@@ -219,7 +233,7 @@ form.addEventListener('submit', async (e) => {
   const hasImage = imageInput.files.length > 0;
 
   if (!question && !hasImage) {
-    showError('سوال یا عکس رو وارد کن.');
+    showError('Provide a question or an image.');
     return;
   }
 
@@ -241,15 +255,15 @@ form.addEventListener('submit', async (e) => {
       resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
       setTimeout(renderMath, 50);
     } else {
-      let msg = '⚠️ ' + (data.error || 'خطایی پیش اومد.');
-      if (data.detail) msg += '\n\n🔍 ' + data.detail;
+      let msg = '⚠ ' + (data.error || 'Something went wrong.');
+      if (data.detail) msg += '\n\n' + data.detail;
       errorBox.textContent = msg;
       errorBox.style.whiteSpace = 'pre-wrap';
       errorBox.hidden = false;
       errorBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   } catch (err) {
-    showError('خطای شبکه: ' + err.message);
+    showError('Network error: ' + err.message);
   } finally {
     solveBtn.disabled = false;
     btnText.hidden = false;
@@ -287,8 +301,8 @@ function showError(msg) {
 
 copyBtn.addEventListener('click', () => {
   navigator.clipboard.writeText(resultBody.innerText);
-  copyBtn.textContent = '✅';
-  setTimeout(() => copyBtn.textContent = '📋', 1500);
+  copyBtn.textContent = '✓';
+  setTimeout(() => copyBtn.textContent = '⧉', 1500);
 });
 </script>
 
