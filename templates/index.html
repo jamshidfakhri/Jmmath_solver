@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>حل‌کننده ریاضی | Math Solver</title>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
 <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
@@ -121,6 +124,7 @@ form.addEventListener('submit', async (e) => {
       resultBody.innerHTML = formatAnswer(data.answer);
       resultSection.hidden = false;
       resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setTimeout(renderMath, 50);
     } else {
       let msg = '⚠️ ' + (data.error || 'خطایی پیش اومد.');
       if (data.detail) {
@@ -152,6 +156,20 @@ function formatAnswer(text) {
     .replace(/`(.+?)`/g, '<code>$1</code>')
     .replace(/\n/g, '<br>');
   return html;
+}
+
+function renderMath() {
+  if (window.renderMathInElement) {
+    renderMathInElement(document.getElementById('resultBody'), {
+      delimiters: [
+        {left: '$$', right: '$$', display: true},
+        {left: '\\[', right: '\\]', display: true},
+        {left: '\\(', right: '\\)', display: false},
+        {left: '$', right: '$', display: false}
+      ],
+      throwOnError: false
+    });
+  }
 }
 
 function showError(msg) {
