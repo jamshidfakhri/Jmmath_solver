@@ -9,8 +9,8 @@ app = Flask(__name__)
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
 client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
 
-TEXT_MODEL = "llama-3.3-70b-versatile"
-VISION_MODEL = "llama-3.2-11b-vision-preview"
+TEXT_MODEL = "openai/gpt-oss-120b"
+VISION_MODEL = "qwen/qwen3.6-27b"
 
 SYSTEM_PROMPT = """You are a professional mathematics tutor. Your job is to solve math problems step by step.
 
