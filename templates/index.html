@@ -122,10 +122,20 @@ form.addEventListener('submit', async (e) => {
       resultSection.hidden = false;
       resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } else {
-      showError(data.error || 'خطایی پیش اومد.');
+      let msg = '⚠️ ' + (data.error || 'خطایی پیش اومد.');
+      if (data.detail) {
+        msg += '\n\n🔍 جزئیات خطا:\n' + data.detail;
+      }
+      if (data.trace) {
+        msg += '\n\n📋 متن کامل:\n' + data.trace;
+      }
+      errorBox.textContent = msg;
+      errorBox.style.whiteSpace = 'pre-wrap';
+      errorBox.hidden = false;
+      errorBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   } catch (err) {
-    showError('خطای شبکه. دوباره امتحان کن.');
+    showError('خطای شبکه: ' + err.message);
   } finally {
     solveBtn.disabled = false;
     btnText.hidden = false;
@@ -145,7 +155,8 @@ function formatAnswer(text) {
 }
 
 function showError(msg) {
-  errorBox.textContent = '⚠️ ' + msg;
+  errorBox.textContent = msg;
+  errorBox.style.whiteSpace = 'pre-wrap';
   errorBox.hidden = false;
 }
 
