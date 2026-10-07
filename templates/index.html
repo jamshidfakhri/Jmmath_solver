@@ -177,6 +177,7 @@
     <div class="card-head">
       <span class="card-num">III</span>
       <span class="card-title">The Revelation</span>
+      <span class="source-badge" id="sourceBadge" hidden></span>
       <div class="result-actions">
         <button class="copy-btn" id="copyBtn" title="Copy">⧉</button>
         <button class="copy-btn" id="shareBtn" title="Share">↗</button>
@@ -219,6 +220,7 @@ const graphWrap = document.getElementById('graphWrap');
 const errorBox = document.getElementById('errorBox');
 const copyBtn = document.getElementById('copyBtn');
 const shareBtn = document.getElementById('shareBtn');
+const sourceBadge = document.getElementById('sourceBadge');
 const historySection = document.getElementById('historySection');
 const historyList = document.getElementById('historyList');
 const clearInputBtn = document.getElementById('clearInputBtn');
@@ -229,8 +231,8 @@ let selectedEngine = 'lightning';
 let currentMode = 'solve';
 let sessionId = localStorage.getItem('solver_session') || ('s_' + Math.random().toString(36).substring(2, 12));
 localStorage.setItem('solver_session', sessionId);
+let rateLimitTimer = null;
 
-/* ============ Typewriter ============ */
 (function typeHero() {
   const target = document.getElementById('heroTitle');
   const text = 'Every equation has an answer.';
@@ -247,7 +249,6 @@ localStorage.setItem('solver_session', sessionId);
   step();
 })();
 
-/* ============ Engines ============ */
 fetch('/api/engines').then(r => r.json()).then(data => {
   data.engines.forEach(e => {
     const btn = document.querySelector(`.engine-btn[data-engine="${e.key}"]`);
@@ -264,7 +265,6 @@ document.querySelectorAll('.engine-btn').forEach(btn => {
   });
 });
 
-/* ============ Mode ============ */
 document.querySelectorAll('.mode-tab[data-mode]').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.mode-tab[data-mode]').forEach(t => t.classList.remove('active'));
@@ -283,7 +283,6 @@ clearChatBtn.addEventListener('click', async () => {
   setTimeout(() => clearChatBtn.textContent = '✕', 1200);
 });
 
-/* ============ Keyboard ============ */
 document.querySelectorAll('.kb-tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.kb-tab').forEach(t => t.classList.remove('active'));
@@ -308,7 +307,6 @@ function insertAtCursor(textarea, text) {
   autoResize();
 }
 
-/* ============ Auto resize + clear ============ */
 function autoResize() {
   questionInput.style.height = 'auto';
   questionInput.style.height = Math.min(questionInput.scrollHeight, 260) + 'px';
@@ -323,7 +321,42 @@ clearInputBtn.addEventListener('click', () => {
   questionInput.focus();
 });
 
-/* ============ History ============ */
+function setSourceBadge(source) {
+  if (!source) { sourceBadge.hidden = true; return; }
+  const map = {
+    calculator: { text: '⚡ INSTANT', cls: 'src-calc' },
+    cache:      { text: '📦 CACHED',  cls: 'src-cache' },
+    ai:         { text: '🧠 AI',      cls: 'src-ai' }
+  };
+  const m = map[source] || { text: source.toUpperCase(), cls: 'src-ai' };
+  sourceBadge.textContent = m.text;
+  sourceBadge.className = 'source-badge ' + m.cls;
+  sourceBadge.hidden = false;
+}
+
+function startRateLimitCountdown(seconds) {
+  if (rateLimitTimer) clearInterval(rateLimitTimer);
+  let remaining = seconds;
+  errorBox.innerHTML =
+    '<div class="rl-box">' +
+      '<div class="rl-icon">✋</div>' +
+      '<div class="rl-title">Slow down, mathematician.</div>' +
+      '<div class="rl-msg">You can ask again in <span id="rlCount">' + remaining + '</span> seconds.</div>' +
+    '</div>';
+  errorBox.hidden = false;
+  errorBox.scrollIntoView({behavior: 'smooth', block: 'start'});
+  rateLimitTimer = setInterval(() => {
+    remaining--;
+    const el = document.getElementById('rlCount');
+    if (el) el.textContent = remaining;
+    if (remaining <= 0) {
+      clearInterval(rateLimitTimer);
+      rateLimitTimer = null;
+      errorBox.hidden = true;
+    }
+  }, 1000);
+}
+
 function getHistory() {
   try { return JSON.parse(localStorage.getItem('solver_history') || '[]'); } catch { return []; }
 }
@@ -331,9 +364,9 @@ function setHistory(h) {
   localStorage.setItem('solver_history', JSON.stringify(h.slice(0, 8)));
   renderHistory();
 }
-function addToHistory(q, a, engine) {
+function addToHistory(q, a, engine, source) {
   const h = getHistory();
-  h.unshift({ q, a, engine, t: Date.now() });
+  h.unshift({ q, a, engine, source, t: Date.now() });
   setHistory(h);
 }
 function renderHistory() {
@@ -349,6 +382,7 @@ function renderHistory() {
       questionInput.value = item.q;
       autoResize();
       resultBody.innerHTML = formatAnswer(item.a);
+      setSourceBadge(item.source || 'ai');
       resultSection.hidden = false;
       tryPlotGraph(item.q);
       setTimeout(renderMath, 50);
@@ -366,7 +400,6 @@ clearHistoryBtn.addEventListener('click', () => {
 });
 renderHistory();
 
-/* ============ Share ============ */
 shareBtn.addEventListener('click', async () => {
   const url = window.location.origin + '/?q=' + encodeURIComponent(questionInput.value);
   try {
@@ -386,7 +419,6 @@ shareBtn.addEventListener('click', async () => {
   }
 })();
 
-/* ============ Graph ============ */
 function tryPlotGraph(question) {
   const m = question.match(/^\s*(?:y|f\s*\(\s*x\s*\))\s*=\s*(.+)$/i);
   if (!m) { graphWrap.hidden = true; return; }
@@ -408,12 +440,12 @@ function tryPlotGraph(question) {
   }, 80);
 }
 
-/* ============ Submit ============ */
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   errorBox.hidden = true;
   resultSection.hidden = true;
   graphWrap.hidden = true;
+  if (rateLimitTimer) { clearInterval(rateLimitTimer); rateLimitTimer = null; }
 
   const question = questionInput.value.trim();
   if (!question) { showError('Type your problem first.'); return; }
@@ -436,13 +468,20 @@ form.addEventListener('submit', async (e) => {
   try {
     const res = await fetch('/api/solve', { method: 'POST', body: fd });
     const data = await res.json();
+
+    if (res.status === 429 && data.rate_limited) {
+      startRateLimitCountdown(data.retry_after || 60);
+      return;
+    }
+
     if (data.ok) {
       resultBody.innerHTML = formatAnswer(data.answer);
+      setSourceBadge(data.source);
       resultSection.hidden = false;
       resultSection.scrollIntoView({behavior: 'smooth', block: 'start'});
       setTimeout(renderMath, 50);
       tryPlotGraph(question);
-      if (currentMode === 'solve') addToHistory(question, data.answer, selectedEngine);
+      if (currentMode === 'solve') addToHistory(question, data.answer, selectedEngine, data.source);
     } else {
       showError((data.error || 'Error') + (data.detail ? ' — ' + data.detail : ''));
     }
