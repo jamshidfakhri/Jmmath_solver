@@ -3,14 +3,46 @@ import base64
 import traceback
 from flask import Flask, render_template, request, jsonify
 from groq import Groq
+from openai import OpenAI
 
 app = Flask(__name__)
 
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
-client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
+OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 
-TEXT_MODEL = "openai/gpt-oss-120b"
-VISION_MODEL = "qwen/qwen3.6-27b"
+groq_client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
+openrouter_client = OpenAI(
+    base_url="https://openrouter.ai/api/v1",
+    api_key=OPENROUTER_API_KEY
+) if OPENROUTER_API_KEY else None
+
+# ============ Engines ============
+ENGINES = {
+    "lightning": {
+        "name": "Lightning",
+        "provider": "groq",
+        "text_model": "openai/gpt-oss-120b",
+        "vision_model": "qwen/qwen3.6-27b",
+    },
+    "reasoning": {
+        "name": "Reasoning",
+        "provider": "groq",
+        "text_model": "deepseek-r1-distill-llama-70b",
+        "vision_model": "qwen/qwen3.6-27b",
+    },
+    "gemini": {
+        "name": "Gemini",
+        "provider": "openrouter",
+        "text_model": "google/gemini-2.0-flash-exp:free",
+        "vision_model": "google/gemini-2.0-flash-exp:free",
+    },
+    "deepseek": {
+        "name": "DeepSeek",
+        "provider": "openrouter",
+        "text_model": "deepseek/deepseek-chat:free",
+        "vision_model": "deepseek/deepseek-chat:free",
+    },
+}
 
 SYSTEM_PROMPT = """You are a mathematics solver. Your ONLY job is to solve math problems.
 
@@ -30,10 +62,6 @@ $$2x = 10$$
 $$x = \\frac{10}{2}$$
 $$x = 5$$
 
-Example for input "انتگرال x^2":
-$$\\int x^{2} \\, dx$$
-$$= \\frac{x^{3}}{3} + C$$
-
 REMEMBER: No words. No explanations. Only math."""
 
 
@@ -46,17 +74,49 @@ def home():
     return render_template("index.html")
 
 
+@app.route("/api/engines")
+def engines():
+    result = []
+    for key, val in ENGINES.items():
+        available = False
+        if val["provider"] == "groq" and groq_client:
+            available = True
+        elif val["provider"] == "openrouter" and openrouter_client:
+            available = True
+        result.append({
+            "key": key,
+            "name": val["name"],
+            "provider": val["provider"],
+            "available": available
+        })
+    return jsonify({"engines": result})
+
+
 @app.route("/api/solve", methods=["POST"])
 def solve():
-    if not client:
-        return jsonify({"error": "API key not configured"}), 500
-
     try:
         question = request.form.get("question", "").strip()
+        engine_key = request.form.get("engine", "lightning").strip()
         image = request.files.get("image")
 
         if not question and not image:
-            return jsonify({"error": "سوال یا عکس رو وارد کن"}), 400
+            return jsonify({"error": "Provide a question or an image"}), 400
+
+        engine = ENGINES.get(engine_key)
+        if not engine:
+            return jsonify({"error": "Unknown engine"}), 400
+
+        # ============ انتخاب کلاینت ============
+        if engine["provider"] == "groq":
+            if not groq_client:
+                return jsonify({"error": "Groq API key not configured"}), 500
+            client = groq_client
+        elif engine["provider"] == "openrouter":
+            if not openrouter_client:
+                return jsonify({"error": "OpenRouter API key not configured"}), 500
+            client = openrouter_client
+        else:
+            return jsonify({"error": "Unknown provider"}), 500
 
         messages = [{"role": "system", "content": SYSTEM_PROMPT}]
 
@@ -70,10 +130,10 @@ def solve():
                     {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{img_b64}"}}
                 ]
             })
-            model = VISION_MODEL
+            model = engine["vision_model"]
         else:
             messages.append({"role": "user", "content": question})
-            model = TEXT_MODEL
+            model = engine["text_model"]
 
         completion = client.chat.completions.create(
             model=model,
@@ -83,13 +143,13 @@ def solve():
         )
 
         answer = completion.choices[0].message.content
-        return jsonify({"answer": answer, "ok": True})
+        return jsonify({"answer": answer, "ok": True, "engine": engine_key})
 
     except Exception as e:
         error_detail = traceback.format_exc()
         print("ERROR DETAIL:", error_detail, flush=True)
         return jsonify({
-            "error": "خطا در پردازش سوال",
+            "error": "Error while solving",
             "detail": str(e),
             "trace": error_detail[-500:]
         }), 500
