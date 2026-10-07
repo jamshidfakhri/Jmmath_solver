@@ -48,13 +48,8 @@ MAX_HISTORY = 8
 
 # ==================== Safe Calculator ====================
 SAFE_BINOPS = {
-    ast.Add: op.add,
-    ast.Sub: op.sub,
-    ast.Mult: op.mul,
-    ast.Div: op.truediv,
-    ast.Pow: op.pow,
-    ast.Mod: op.mod,
-    ast.FloorDiv: op.floordiv,
+    ast.Add: op.add, ast.Sub: op.sub, ast.Mult: op.mul, ast.Div: op.truediv,
+    ast.Pow: op.pow, ast.Mod: op.mod, ast.FloorDiv: op.floordiv,
 }
 SAFE_UNARYOPS = {ast.UAdd: op.pos, ast.USub: op.neg}
 SAFE_FUNCS = {
@@ -90,59 +85,37 @@ def normalize_text(text):
             out.append("%")
         else:
             out.append(ch)
-    s = "".join(out)
-    s = s.replace("^", "**")
-    s = re.sub(r"\s+", " ", s).strip().lower()
-    return s
+    s = "".join(out).replace("^", "**")
+    return re.sub(r"\s+", " ", s).strip().lower()
 
 
 def _check_node(node):
     if isinstance(node, ast.Constant):
         return isinstance(node.value, (int, float))
     if isinstance(node, ast.BinOp):
-        if type(node.op) not in SAFE_BINOPS:
-            return False
-        return _check_node(node.left) and _check_node(node.right)
+        return type(node.op) in SAFE_BINOPS and _check_node(node.left) and _check_node(node.right)
     if isinstance(node, ast.UnaryOp):
-        if type(node.op) not in SAFE_UNARYOPS:
-            return False
-        return _check_node(node.operand)
+        return type(node.op) in SAFE_UNARYOPS and _check_node(node.operand)
     if isinstance(node, ast.Call):
-        if not isinstance(node.func, ast.Name):
-            return False
-        if node.func.id not in SAFE_FUNCS:
-            return False
-        return all(_check_node(a) for a in node.args)
+        return (isinstance(node.func, ast.Name)
+                and node.func.id in SAFE_FUNCS
+                and all(_check_node(a) for a in node.args))
     if isinstance(node, ast.Name):
         return node.id in SAFE_CONSTS
     return False
 
 
 def _safe_eval(node):
-    if isinstance(node, ast.Constant):
-        if isinstance(node.value, (int, float)):
-            return node.value
-        raise ValueError("Only numbers")
-    if isinstance(node, ast.BinOp):
-        t = type(node.op)
-        if t not in SAFE_BINOPS:
-            raise ValueError("BinOp not allowed")
-        return SAFE_BINOPS[t](_safe_eval(node.left), _safe_eval(node.right))
-    if isinstance(node, ast.UnaryOp):
-        t = type(node.op)
-        if t not in SAFE_UNARYOPS:
-            raise ValueError("UnaryOp not allowed")
-        return SAFE_UNARYOPS[t](_safe_eval(node.operand))
-    if isinstance(node, ast.Call):
-        fname = node.func.id
-        if fname not in SAFE_FUNCS:
-            raise ValueError("Func not allowed")
-        args = [_safe_eval(a) for a in node.args]
-        return SAFE_FUNCS[fname](*args)
-    if isinstance(node, ast.Name):
-        if node.id in SAFE_CONSTS:
-            return SAFE_CONSTS[node.id]
-        raise ValueError("Name not allowed")
+    if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
+        return node.value
+    if isinstance(node, ast.BinOp) and type(node.op) in SAFE_BINOPS:
+        return SAFE_BINOPS[type(node.op)](_safe_eval(node.left), _safe_eval(node.right))
+    if isinstance(node, ast.UnaryOp) and type(node.op) in SAFE_UNARYOPS:
+        return SAFE_UNARYOPS[type(node.op)](_safe_eval(node.operand))
+    if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id in SAFE_FUNCS:
+        return SAFE_FUNCS[node.func.id](*[_safe_eval(a) for a in node.args])
+    if isinstance(node, ast.Name) and node.id in SAFE_CONSTS:
+        return SAFE_CONSTS[node.id]
     raise ValueError("Not allowed")
 
 
@@ -173,13 +146,8 @@ def try_calculate(normalized_text):
 
 def format_calc_answer(expr, result):
     if isinstance(result, float):
-        if result.is_integer():
-            result = int(result)
-        else:
-            result = round(result, 10)
-    display = expr.replace("**", "@@POW@@")
-    display = display.replace("*", " \\times ")
-    display = display.replace("@@POW@@", "^")
+        result = int(result) if result.is_integer() else round(result, 10)
+    display = expr.replace("**", "@@POW@@").replace("*", " \\times ").replace("@@POW@@", "^")
     return "$$" + display + " = " + str(result) + "$$"
 
 
@@ -217,15 +185,13 @@ def cache_set(key, answer):
 
 
 # ==================== Rate Limiter ====================
-# فقط مسیر AI رو محدود می‌کنه، نه ماشین‌حساب و کش
-RATE_LIMIT_WINDOW = 5 * 60      # ۵ دقیقه
-RATE_LIMIT_MAX = 15              # ۱۵ درخواست AI در هر پنجره
+RATE_LIMIT_WINDOW = 5 * 60
+RATE_LIMIT_MAX = 15
 _rate_lock = threading.Lock()
-_rate_store = {}                 # {ip: [timestamps]}
+_rate_store = {}
 
 
 def get_client_ip():
-    """IP واقعی کاربر رو از هدرهای پروکسی می‌خونه."""
     fwd = request.headers.get("X-Forwarded-For", "")
     if fwd:
         return fwd.split(",")[0].strip()
@@ -233,34 +199,21 @@ def get_client_ip():
 
 
 def check_rate_limit(ip):
-    """
-    Returns:
-      (allowed: bool, retry_after: int, remaining: int)
-    """
     now = time.time()
     with _rate_lock:
-        times = _rate_store.get(ip, [])
-        # پاک‌سازی قدیمی‌ها
-        times = [t for t in times if now - t < RATE_LIMIT_WINDOW]
-
+        times = [t for t in _rate_store.get(ip, []) if now - t < RATE_LIMIT_WINDOW]
         if len(times) >= RATE_LIMIT_MAX:
-            oldest = times[0]
-            retry = int(RATE_LIMIT_WINDOW - (now - oldest)) + 1
+            retry = int(RATE_LIMIT_WINDOW - (now - times[0])) + 1
             _rate_store[ip] = times
             return (False, retry, 0)
-
         times.append(now)
         _rate_store[ip] = times
-        remaining = RATE_LIMIT_MAX - len(times)
-
-        # هر چند وقت یه بار، IPهای قدیمی رو پاک کن
         if len(_rate_store) > 5000:
             for k in list(_rate_store.keys()):
                 _rate_store[k] = [t for t in _rate_store[k] if now - t < RATE_LIMIT_WINDOW]
                 if not _rate_store[k]:
                     del _rate_store[k]
-
-        return (True, 0, remaining)
+        return (True, 0, RATE_LIMIT_MAX - len(times))
 
 
 # ==================== Routes ====================
@@ -315,7 +268,6 @@ def solve():
         answer = None
         ckey = None
 
-        # ---------- Solve Mode: Calculator + Cache ----------
         if mode == "solve":
             calc = try_calculate(normalized)
             if calc is not None:
@@ -329,12 +281,9 @@ def solve():
                     answer = cached
                     source = "cache"
 
-        # ---------- Fallback to AI ----------
         if answer is None:
-            # ⬇⬇⬇ Rate limit فقط برای مسیر AI
             client_ip = get_client_ip()
             allowed, retry_after, remaining = check_rate_limit(client_ip)
-
             if not allowed:
                 return jsonify({
                     "error": "Too many requests. Please wait a moment.",
