@@ -95,7 +95,8 @@
             <button type="button" class="kb-tab" data-tab="log">Logs</button>
           </div>
 
-          <div class="kb-panel active" data-panel="num">
+          <!-- Number pad: 6 columns, order is fixed -->
+          <div class="kb-panel kb-panel-num active" data-panel="num">
             <button type="button" data-insert="7">7</button>
             <button type="button" data-insert="8">8</button>
             <button type="button" data-insert="9">9</button>
@@ -385,6 +386,11 @@ clearInputBtn.addEventListener('click', () => {
   questionInput.focus();
 });
 
+function setResultBody(text) {
+  resultBody.textContent = text;
+  setTimeout(renderMath, 50);
+}
+
 function setSourceBadge(source, engineUsedLabel) {
   if (!source) { sourceBadge.hidden = true; return; }
   if (source === 'calculator') {
@@ -444,22 +450,25 @@ function renderHistory() {
   h.forEach(item => {
     const el = document.createElement('div');
     el.className = 'history-item';
-    el.innerHTML = `<div class="h-q">${escapeHtml(item.q)}</div><div class="h-meta">${item.engine} · ${new Date(item.t).toLocaleString()}</div>`;
+    const qLine = document.createElement('div');
+    qLine.className = 'h-q';
+    qLine.textContent = item.q;
+    const metaLine = document.createElement('div');
+    metaLine.className = 'h-meta';
+    metaLine.textContent = item.engine + ' · ' + new Date(item.t).toLocaleString();
+    el.appendChild(qLine);
+    el.appendChild(metaLine);
     el.addEventListener('click', () => {
       questionInput.value = item.q;
       autoResize();
-      resultBody.innerHTML = formatAnswer(item.a);
+      setResultBody(item.a);
       setSourceBadge(item.source || 'ai', item.engineUsedLabel);
       resultSection.hidden = false;
       tryPlotGraph(item.q);
-      setTimeout(renderMath, 50);
       resultSection.scrollIntoView({behavior: 'smooth', block: 'start'});
     });
     historyList.appendChild(el);
   });
-}
-function escapeHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 clearHistoryBtn.addEventListener('click', () => {
   localStorage.removeItem('solver_history');
@@ -522,14 +531,12 @@ form.addEventListener('submit', async (e) => {
   let dots = 0;
   const dotsTimer = setInterval(() => {
     dots = (dots + 1) % 4;
-    // اگه از ۸ ثانیه گذشته، متن عوض شده، پس نقطه‌ها رو اضافه نکن
     if (btnText.textContent.indexOf('WAKING') === -1) {
       btnText.textContent = 'CALCULATING' + '.'.repeat(dots);
     }
   }, 400);
   btnLoader.hidden = false;
 
-  // بعد از ۸ ثانیه، پیام «بیدار کردن موتور»
   const wakeTimer = setTimeout(() => {
     btnText.textContent = 'WAKING UP ENGINE';
   }, 8000);
@@ -550,11 +557,10 @@ form.addEventListener('submit', async (e) => {
     }
 
     if (data.ok) {
-      resultBody.innerHTML = formatAnswer(data.answer);
+      setResultBody(data.answer);
       setSourceBadge(data.source, data.engine_label);
       resultSection.hidden = false;
       resultSection.scrollIntoView({behavior: 'smooth', block: 'start'});
-      setTimeout(renderMath, 50);
       tryPlotGraph(question);
       if (currentMode === 'solve') {
         addToHistory(question, data.answer, data.engine_used || selectedEngine, data.source, data.engine_label);
@@ -573,10 +579,6 @@ form.addEventListener('submit', async (e) => {
   }
 });
 
-function formatAnswer(text) {
-  return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
-}
-
 function renderMath() {
   if (window.renderMathInElement) {
     renderMathInElement(document.getElementById('resultBody'), {
@@ -586,7 +588,8 @@ function renderMath() {
         {left: '\\(', right: '\\)', display: false},
         {left: '$', right: '$', display: false}
       ],
-      throwOnError: false
+      throwOnError: false,
+      trust: false
     });
   }
 }
