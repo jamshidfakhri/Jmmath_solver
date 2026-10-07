@@ -8,7 +8,6 @@
   --primary: #6366f1;
   --primary-dark: #4f46e5;
   --border: #e5e7eb;
-  --success: #10b981;
   --error: #ef4444;
 }
 
@@ -57,7 +56,7 @@ header .wrap { display: flex; justify-content: space-between; align-items: cente
 
 textarea {
   width: 100%;
-  min-height: 120px;
+  min-height: 100px;
   padding: 14px 16px;
   border: 2px solid var(--border);
   border-radius: 14px;
@@ -71,6 +70,83 @@ textarea {
 }
 textarea:focus { border-color: var(--primary); background: #fff; }
 
+/* ============ کیبورد ریاضی ============ */
+.math-kb {
+  margin-top: 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 10px;
+}
+
+.kb-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+.kb-tabs::-webkit-scrollbar { display: none; }
+
+.kb-tab {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-family: 'Vazirmatn', Tahoma, sans-serif;
+  font-size: 0.8rem;
+  color: var(--text-light);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.kb-tab:hover { background: #eef2ff; color: var(--primary); }
+.kb-tab.active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+.kb-panel {
+  display: none;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+}
+.kb-panel.active { display: grid; }
+
+.kb-panel button {
+  width: 100%;
+  height: 44px;
+  padding: 0;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.95rem;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.kb-panel button:hover {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+  transform: translateY(-2px);
+}
+.kb-panel button:active { transform: scale(0.94); }
+
+@media (max-width: 600px) {
+  .kb-panel { grid-template-columns: repeat(4, 1fr); }
+  .kb-panel button { height: 40px; font-size: 0.85rem; }
+  .kb-tab { font-size: 0.75rem; padding: 5px 10px; }
+}
+
+/* ============ آپلود ============ */
 .upload-area {
   border: 2px dashed var(--border);
   border-radius: 14px;
@@ -93,6 +169,7 @@ textarea:focus { border-color: var(--primary); background: #fff; }
   border: 1px solid var(--border);
 }
 
+/* ============ دکمه حل ============ */
 .solve-btn {
   width: 100%;
   height: 56px;
@@ -126,6 +203,7 @@ textarea:focus { border-color: var(--primary); background: #fff; }
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* ============ نتیجه ============ */
 .result {
   background: var(--card);
   border-radius: 20px;
@@ -159,20 +237,17 @@ textarea:focus { border-color: var(--primary); background: #fff; }
 
 .result-body {
   font-size: 1rem;
-  line-height: 2.1;
+  line-height: 2.4;
   word-wrap: break-word;
+  text-align: center;
 }
-.result-body code {
-  background: #f3f4f6;
-  padding: 2px 8px;
-  border-radius: 6px;
-  font-family: 'JetBrains Mono', monospace;
-  direction: ltr;
-  display: inline-block;
-  font-size: 0.9rem;
+.result-body .katex-display {
+  margin: 12px 0;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
-.result-body strong { color: var(--primary-dark); }
 
+/* ============ خطا ============ */
 .error {
   background: #fef2f2;
   border: 1px solid #fecaca;
@@ -180,6 +255,7 @@ textarea:focus { border-color: var(--primary); background: #fff; }
   padding: 16px 20px;
   border-radius: 14px;
   margin-bottom: 30px;
+  font-size: 0.9rem;
 }
 
 footer {
