@@ -1,4 +1,3 @@
-
 import os
 import re
 import ast
@@ -27,20 +26,18 @@ app.secret_key = os.environ.get("SECRET_KEY", "solver-secret-xyz")
 
 SITE_URL = os.environ.get("RENDER_EXTERNAL_URL", "https://jmmath-solver.onrender.com")
 
-# ==================== API Keys (from env only) ====================
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "").strip()
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "").strip()
 
-# Optional: Telegram feedback notifications
 BOT_TOKEN = os.environ.get("BOT_TOKEN", "").strip()
 ADMIN_ID = os.environ.get("ADMIN_ID", "").strip()
 
 if not GROQ_API_KEY:
-    logger.warning("GROQ_API_KEY is not set. Groq engines (lightning, reasoning) will be unavailable.")
+    logger.warning("GROQ_API_KEY is not set.")
 if not OPENROUTER_API_KEY:
-    logger.warning("OPENROUTER_API_KEY is not set. OpenRouter engines (gemini, deepseek) will be unavailable.")
+    logger.warning("OPENROUTER_API_KEY is not set.")
 if not BOT_TOKEN or not ADMIN_ID:
-    logger.info("Telegram feedback notifications disabled (BOT_TOKEN or ADMIN_ID missing).")
+    logger.info("Telegram feedback notifications disabled.")
 
 groq_client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
 openrouter_client = OpenAI(
@@ -79,7 +76,7 @@ feedback_stats = {
     "total": 0,
     "good": 0,
     "bad": 0,
-    "recent": [],  # last 20
+    "recent": [],
 }
 
 
@@ -295,7 +292,6 @@ def call_ai_engine(engine_key, question, mode, session_id):
 
 
 def send_telegram_notification(text):
-    """ارسال پیام به ادمین. اگه تنظیم نشده، ساکت رد شو."""
     if not BOT_TOKEN or not ADMIN_ID:
         return
     try:
@@ -427,11 +423,9 @@ def feedback():
             })
             feedback_stats["recent"] = feedback_stats["recent"][:20]
 
-        # فقط بازخورد منفی رو به تلگرام بفرست
         if rating == "bad":
-            emoji = "👎"
             msg = (
-                f"{emoji} Negative feedback on THE SOLVER\n\n"
+                f"👎 Negative feedback on THE SOLVER\n\n"
                 f"Question: {question}\n"
                 f"Engine: {engine_used or source}\n\n"
                 f"Answer (excerpt):\n{answer[:300]}"
@@ -487,7 +481,7 @@ def solve():
             client_ip = get_client_ip()
             allowed, retry_after = check_rate_limit(client_ip)
             if not allowed:
-                logger.warning(f"Rate limit hit for IP {client_ip}, retry_after={retry_after}s")
+                logger.warning(f"Rate limit hit for IP {client_ip}")
                 return jsonify({
                     "error": "Too many requests. Please wait a moment.",
                     "rate_limited": True,
