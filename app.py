@@ -24,11 +24,14 @@ openrouter_client = OpenAI(
 ) if OPENROUTER_API_KEY else None
 
 ENGINES = {
-    "lightning": {"provider": "groq", "model": "llama-3.3-70b-versatile"},
-    "reasoning": {"provider": "groq", "model": "deepseek-r1-distill-llama-70b"},
-    "gemini": {"provider": "openrouter", "model": "google/gemini-2.0-flash-exp:free"},
-    "deepseek": {"provider": "openrouter", "model": "deepseek/deepseek-chat:free"},
+    "lightning": {"provider": "groq", "model": "llama-3.3-70b-versatile", "label": "LIGHTNING"},
+    "reasoning": {"provider": "groq", "model": "deepseek-r1-distill-llama-70b", "label": "REASONING"},
+    "gemini": {"provider": "openrouter", "model": "google/gemini-2.0-flash-exp:free", "label": "GEMINI"},
+    "deepseek": {"provider": "openrouter", "model": "deepseek/deepseek-chat:free", "label": "DEEPSEEK"},
 }
+
+# ترتیب fallback: اول موتور انتخاب‌شده، بعد این سه‌تا به همین ترتیب (بدون تکرار)
+FALLBACK_ORDER = ["lightning", "gemini", "deepseek"]
 
 SYSTEM_PROMPT = """You are a mathematics solver. Your ONLY job is to solve math problems.
 
@@ -184,9 +187,9 @@ def cache_set(key, answer):
             _cache.popitem(last=False)
 
 
-# ==================== Rate Limiter ====================
-RATE_LIMIT_WINDOW = 5 * 60
-RATE_LIMIT_MAX = 15
+# ==================== Rate Limiter (20 per minute) ====================
+RATE_LIMIT_WINDOW = 60
+RATE_LIMIT_MAX = 20
 _rate_lock = threading.Lock()
 _rate_store = {}
 
@@ -205,7 +208,7 @@ def check_rate_limit(ip):
         if len(times) >= RATE_LIMIT_MAX:
             retry = int(RATE_LIMIT_WINDOW - (now - times[0])) + 1
             _rate_store[ip] = times
-            return (False, retry, 0)
+            return (False, retry)
         times.append(now)
         _rate_store[ip] = times
         if len(_rate_store) > 5000:
@@ -213,7 +216,49 @@ def check_rate_limit(ip):
                 _rate_store[k] = [t for t in _rate_store[k] if now - t < RATE_LIMIT_WINDOW]
                 if not _rate_store[k]:
                     del _rate_store[k]
-        return (True, 0, RATE_LIMIT_MAX - len(times))
+        return (True, 0)
+
+
+# ==================== Fallback Chain ====================
+def build_fallback_chain(selected):
+    chain = [selected]
+    for e in FALLBACK_ORDER:
+        if e not in chain:
+            chain.append(e)
+    return chain
+
+
+def call_ai_engine(engine_key, question, mode, session_id):
+    """Try to solve using the given engine. Raises on failure."""
+    engine = ENGINES[engine_key]
+
+    if engine["provider"] == "groq":
+        if not groq_client:
+            raise RuntimeError("Groq not configured")
+        client = groq_client
+    elif engine["provider"] == "openrouter":
+        if not openrouter_client:
+            raise RuntimeError("OpenRouter not configured")
+        client = openrouter_client
+    else:
+        raise RuntimeError("Unknown provider")
+
+    if mode == "chat" and session_id:
+        history = chat_histories.setdefault(session_id, [])
+        msgs = [{"role": "system", "content": SYSTEM_PROMPT}] + history
+    else:
+        msgs = [{"role": "system", "content": SYSTEM_PROMPT}]
+
+    msgs.append({"role": "user", "content": question})
+
+    completion = client.chat.completions.create(
+        model=engine["model"],
+        messages=msgs,
+        temperature=0.1,
+        max_tokens=800,
+        timeout=20.0,
+    )
+    return completion.choices[0].message.content
 
 
 # ==================== Routes ====================
@@ -232,7 +277,7 @@ def engines():
             available = openrouter_client is not None
         else:
             available = False
-        out.append({"key": key, "provider": val["provider"], "available": available})
+        out.append({"key": key, "provider": val["provider"], "available": available, "label": val["label"]})
     return jsonify({"engines": out})
 
 
@@ -253,11 +298,11 @@ def solve():
         mode = request.form.get("mode", "solve").strip()
         session_id = request.form.get("session_id", "").strip()
 
+        # ---------- Validation ----------
         if not raw_question:
             return jsonify({"error": "Type your problem first."}), 400
-
-        if len(raw_question) > 1000:
-            return jsonify({"error": "Question too long. Max 1000 characters."}), 400
+        if len(raw_question) > 500:
+            return jsonify({"error": "Question too long. Max 500 characters."}), 400
 
         engine = ENGINES.get(engine_key)
         if not engine:
@@ -267,23 +312,28 @@ def solve():
         source = "ai"
         answer = None
         ckey = None
+        engine_used = engine_key
 
+        # ---------- Solve Mode: Calculator + Cache ----------
         if mode == "solve":
             calc = try_calculate(normalized)
             if calc is not None:
                 expr, result = calc
                 answer = format_calc_answer(expr, result)
                 source = "calculator"
+                engine_used = None
             else:
                 ckey = cache_key(raw_question, engine_key)
                 cached = cache_get(ckey)
                 if cached is not None:
                     answer = cached
                     source = "cache"
+                    engine_used = None
 
+        # ---------- AI with Fallback ----------
         if answer is None:
             client_ip = get_client_ip()
-            allowed, retry_after, remaining = check_rate_limit(client_ip)
+            allowed, retry_after = check_rate_limit(client_ip)
             if not allowed:
                 return jsonify({
                     "error": "Too many requests. Please wait a moment.",
@@ -291,42 +341,39 @@ def solve():
                     "retry_after": retry_after
                 }), 429
 
-            if engine["provider"] == "groq":
-                if not groq_client:
-                    return jsonify({"error": "Groq not configured"}), 500
-                client = groq_client
-            elif engine["provider"] == "openrouter":
-                if not openrouter_client:
-                    return jsonify({"error": "OpenRouter key not configured"}), 500
-                client = openrouter_client
-            else:
-                return jsonify({"error": "Unknown provider"}), 500
+            chain = build_fallback_chain(engine_key)
+            last_error = None
+            answer = None
+            engine_used = None
 
+            for ek in chain:
+                try:
+                    result = call_ai_engine(ek, raw_question, mode, session_id)
+                    if result and result.strip():
+                        answer = result
+                        engine_used = ek
+                        source = "ai"
+                        break
+                except Exception as e:
+                    last_error = str(e)
+                    print(f"Engine '{ek}' failed: {e}", flush=True)
+                    continue
+
+            if answer is None:
+                return jsonify({
+                    "error": "All engines are unavailable. Please try again in a moment.",
+                    "detail": last_error
+                }), 503
+
+            # Update chat history
             if mode == "chat" and session_id:
                 history = chat_histories.setdefault(session_id, [])
-                msgs = [{"role": "system", "content": SYSTEM_PROMPT}] + history
-            else:
-                msgs = [{"role": "system", "content": SYSTEM_PROMPT}]
-
-            msgs.append({"role": "user", "content": raw_question})
-
-            completion = client.chat.completions.create(
-                model=engine["model"],
-                messages=msgs,
-                temperature=0.1,
-                max_tokens=800,
-                timeout=15.0,
-            )
-            answer = completion.choices[0].message.content
-            source = "ai"
-
-            if mode == "chat" and session_id:
-                history = chat_histories[session_id]
                 history.append({"role": "user", "content": raw_question})
                 history.append({"role": "assistant", "content": answer})
                 if len(history) > MAX_HISTORY * 2:
                     chat_histories[session_id] = history[-MAX_HISTORY * 2:]
 
+            # Cache
             if mode == "solve" and ckey:
                 cache_set(ckey, answer)
 
@@ -334,13 +381,15 @@ def solve():
             "answer": answer,
             "ok": True,
             "engine": engine_key,
+            "engine_used": engine_used,
+            "engine_label": ENGINES[engine_used]["label"] if engine_used else None,
             "source": source
         })
 
     except Exception as e:
         err = traceback.format_exc()
         print("ERROR:", err, flush=True)
-        return jsonify({"error": "Error", "detail": str(e)}), 500
+        return jsonify({"error": "Something went wrong. Please try again."}), 500
 
 
 @app.route("/ping")
