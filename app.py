@@ -1,3 +1,4 @@
+
 import os
 import re
 import ast
@@ -6,6 +7,8 @@ import time
 import threading
 import logging
 import operator as op
+import urllib.request
+import urllib.parse
 from collections import OrderedDict
 from flask import Flask, render_template, request, jsonify, Response
 from groq import Groq
@@ -28,10 +31,16 @@ SITE_URL = os.environ.get("RENDER_EXTERNAL_URL", "https://jmmath-solver.onrender
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "").strip()
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "").strip()
 
+# Optional: Telegram feedback notifications
+BOT_TOKEN = os.environ.get("BOT_TOKEN", "").strip()
+ADMIN_ID = os.environ.get("ADMIN_ID", "").strip()
+
 if not GROQ_API_KEY:
     logger.warning("GROQ_API_KEY is not set. Groq engines (lightning, reasoning) will be unavailable.")
 if not OPENROUTER_API_KEY:
     logger.warning("OPENROUTER_API_KEY is not set. OpenRouter engines (gemini, deepseek) will be unavailable.")
+if not BOT_TOKEN or not ADMIN_ID:
+    logger.info("Telegram feedback notifications disabled (BOT_TOKEN or ADMIN_ID missing).")
 
 groq_client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
 openrouter_client = OpenAI(
@@ -63,6 +72,16 @@ REMEMBER: No words. No explanations. Only math."""
 
 chat_histories = {}
 MAX_HISTORY = 8
+
+# ==================== Feedback Stats ====================
+_feedback_lock = threading.Lock()
+feedback_stats = {
+    "total": 0,
+    "good": 0,
+    "bad": 0,
+    "recent": [],  # last 20
+}
+
 
 # ==================== Safe Calculator ====================
 SAFE_BINOPS = {
@@ -275,6 +294,18 @@ def call_ai_engine(engine_key, question, mode, session_id):
     return completion.choices[0].message.content
 
 
+def send_telegram_notification(text):
+    """ارسال پیام به ادمین. اگه تنظیم نشده، ساکت رد شو."""
+    if not BOT_TOKEN or not ADMIN_ID:
+        return
+    try:
+        url = "https://api.telegram.org/bot" + BOT_TOKEN + "/sendMessage"
+        data = urllib.parse.urlencode({"chat_id": ADMIN_ID, "text": text[:4000]}).encode()
+        urllib.request.urlopen(url, data=data, timeout=5)
+    except Exception as e:
+        logger.warning(f"Telegram notification failed: {e}")
+
+
 # ==================== Routes ====================
 @app.route("/")
 def home():
@@ -284,6 +315,11 @@ def home():
 @app.route("/about")
 def about():
     return render_template("about.html", site_url=SITE_URL)
+
+
+@app.route("/guide")
+def guide():
+    return render_template("guide.html", site_url=SITE_URL)
 
 
 @app.route("/health")
@@ -296,12 +332,29 @@ def ping():
     return jsonify({"ok": True})
 
 
+@app.route("/stats")
+def stats():
+    with _feedback_lock:
+        return jsonify({
+            "feedback": {
+                "total": feedback_stats["total"],
+                "good": feedback_stats["good"],
+                "bad": feedback_stats["bad"],
+                "ratio": round(
+                    feedback_stats["good"] / feedback_stats["total"], 3
+                ) if feedback_stats["total"] > 0 else None,
+                "recent": feedback_stats["recent"][:10],
+            }
+        })
+
+
 @app.route("/robots.txt")
 def robots():
     txt = (
         "User-agent: *\n"
         "Allow: /\n"
         "Disallow: /api/\n"
+        "Disallow: /stats\n"
         "\n"
         f"Sitemap: {SITE_URL}/sitemap.xml\n"
     )
@@ -314,18 +367,9 @@ def sitemap():
     xml = (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-        f'  <url>\n'
-        f'    <loc>{SITE_URL}/</loc>\n'
-        f'    <lastmod>{today}</lastmod>\n'
-        f'    <changefreq>weekly</changefreq>\n'
-        f'    <priority>1.0</priority>\n'
-        f'  </url>\n'
-        f'  <url>\n'
-        f'    <loc>{SITE_URL}/about</loc>\n'
-        f'    <lastmod>{today}</lastmod>\n'
-        f'    <changefreq>monthly</changefreq>\n'
-        f'    <priority>0.6</priority>\n'
-        f'  </url>\n'
+        f'  <url><loc>{SITE_URL}/</loc><lastmod>{today}</lastmod><changefreq>weekly</changefreq><priority>1.0</priority></url>\n'
+        f'  <url><loc>{SITE_URL}/about</loc><lastmod>{today}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>\n'
+        f'  <url><loc>{SITE_URL}/guide</loc><lastmod>{today}</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>\n'
         '</urlset>\n'
     )
     return Response(xml, mimetype="application/xml")
@@ -352,6 +396,53 @@ def clear_chat():
     if sid in chat_histories:
         del chat_histories[sid]
     return jsonify({"ok": True})
+
+
+@app.route("/api/feedback", methods=["POST"])
+def feedback():
+    try:
+        data = request.get_json() or {}
+        rating = (data.get("rating") or "").strip().lower()
+        question = (data.get("question") or "").strip()[:300]
+        answer = (data.get("answer") or "").strip()[:600]
+        engine_used = (data.get("engine_used") or "").strip()[:40]
+        source = (data.get("source") or "").strip()[:40]
+
+        if rating not in ("good", "bad"):
+            return jsonify({"error": "Invalid rating"}), 400
+
+        with _feedback_lock:
+            feedback_stats["total"] += 1
+            if rating == "good":
+                feedback_stats["good"] += 1
+            else:
+                feedback_stats["bad"] += 1
+            feedback_stats["recent"].insert(0, {
+                "rating": rating,
+                "question": question,
+                "answer": answer[:200],
+                "engine": engine_used or source,
+                "source": source,
+                "time": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            })
+            feedback_stats["recent"] = feedback_stats["recent"][:20]
+
+        # فقط بازخورد منفی رو به تلگرام بفرست
+        if rating == "bad":
+            emoji = "👎"
+            msg = (
+                f"{emoji} Negative feedback on THE SOLVER\n\n"
+                f"Question: {question}\n"
+                f"Engine: {engine_used or source}\n\n"
+                f"Answer (excerpt):\n{answer[:300]}"
+            )
+            send_telegram_notification(msg)
+
+        return jsonify({"ok": True})
+
+    except Exception:
+        logger.exception("Feedback error")
+        return jsonify({"error": "Error"}), 500
 
 
 @app.route("/api/solve", methods=["POST"])
