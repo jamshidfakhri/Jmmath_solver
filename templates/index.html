@@ -17,6 +17,9 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="THE SOLVER — Free Online Math Problem Solver">
 <meta name="twitter:description" content="Solve any math problem instantly. Step-by-step solutions for algebra, calculus, trigonometry, and more.">
+
+<meta name="google-site-verification" content="qHyyiUoZRCG3UJIDRMUolHrN1uA5gIKkRrETm5Ty0hM" />
+
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%230a0d12'/%3E%3Ctext x='16' y='23' font-family='serif' font-size='22' font-weight='700' fill='%23ffffff' text-anchor='middle'%3E∎%3C/text%3E%3C/svg%3E">
 <script type="application/ld+json">
 {
@@ -109,9 +112,7 @@
         <label for="question">Type your problem</label>
         <div class="textarea-wrap">
           <textarea id="question" name="question" placeholder="e.g., 2x + 5 = 15   or   y = x^2"></textarea>
-          <!-- ▼ جدید: دکمه‌ی میکروفن -->
           <button type="button" class="voice-btn" id="voiceBtn" title="Voice input">🎤</button>
-          <!-- ▲ جدید -->
           <button type="button" class="clear-btn" id="clearInputBtn" title="Clear">✕</button>
         </div>
 
@@ -253,13 +254,11 @@
     <div class="graph-wrap" id="graphWrap" hidden>
       <div id="graph"></div>
     </div>
-    <!-- ▼ جدید: بازخورد -->
     <div class="feedback-row" id="feedbackRow">
       <span class="feedback-label">Was this helpful?</span>
       <button type="button" class="feedback-btn" data-rating="good" title="Good answer">👍</button>
       <button type="button" class="feedback-btn" data-rating="bad" title="Bad answer">👎</button>
     </div>
-    <!-- ▲ جدید -->
   </section>
 
   <section class="history" id="historySection" hidden>
@@ -302,11 +301,8 @@ const historyList = document.getElementById('historyList');
 const clearInputBtn = document.getElementById('clearInputBtn');
 const clearHistoryBtn = document.getElementById('clearHistoryBtn');
 const clearChatBtn = document.getElementById('clearChatBtn');
-
-// ▼ جدید
 const voiceBtn = document.getElementById('voiceBtn');
 const feedbackRow = document.getElementById('feedbackRow');
-// ▲ جدید
 
 let selectedEngine = 'lightning';
 let currentMode = 'solve';
@@ -314,13 +310,11 @@ let sessionId = localStorage.getItem('solver_session') || ('s_' + Math.random().
 localStorage.setItem('solver_session', sessionId);
 let rateLimitTimer = null;
 
-// ▼ جدید: برای بازخورد
 let lastQuestion = '';
 let lastAnswer = '';
 let lastEngineUsed = '';
 let lastSource = '';
 let feedbackSent = false;
-// ▲ جدید
 
 (function typeHero() {
   const target = document.getElementById('heroTitle');
@@ -372,7 +366,6 @@ clearChatBtn.addEventListener('click', async () => {
   setTimeout(() => clearChatBtn.textContent = '✕', 1200);
 });
 
-// ============ Keyboard ============
 document.querySelectorAll('.kb-tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.kb-tab').forEach(t => t.classList.remove('active'));
@@ -439,7 +432,6 @@ clearInputBtn.addEventListener('click', () => {
   questionInput.focus();
 });
 
-// ============ Voice Input ============
 (function initVoice() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) {
@@ -478,7 +470,6 @@ clearInputBtn.addEventListener('click', () => {
   };
 })();
 
-// ============ Result Helpers ============
 function setResultBody(text) {
   resultBody.textContent = text;
   setTimeout(renderMath, 50);
@@ -500,7 +491,6 @@ function setSourceBadge(source, engineUsedLabel) {
   sourceBadge.hidden = false;
 }
 
-// ============ Feedback ============
 function resetFeedback() {
   feedbackSent = false;
   feedbackRow.querySelectorAll('.feedback-btn').forEach(b => {
@@ -514,8 +504,6 @@ document.querySelectorAll('.feedback-btn').forEach(btn => {
     if (feedbackSent) return;
     const rating = btn.getAttribute('data-rating');
     feedbackSent = true;
-    btn.disabled = true;
-
     document.querySelectorAll('.feedback-btn').forEach(b => b.disabled = true);
 
     if (rating === 'good') {
@@ -540,7 +528,6 @@ document.querySelectorAll('.feedback-btn').forEach(btn => {
   });
 });
 
-// ============ Rate Limit ============
 function startRateLimitCountdown(seconds) {
   if (rateLimitTimer) clearInterval(rateLimitTimer);
   let remaining = seconds;
@@ -564,7 +551,6 @@ function startRateLimitCountdown(seconds) {
   }, 1000);
 }
 
-// ============ History ============
 function getHistory() {
   try { return JSON.parse(localStorage.getItem('solver_history') || '[]'); } catch { return []; }
 }
@@ -699,7 +685,6 @@ form.addEventListener('submit', async (e) => {
     if (data.ok) {
       setResultBody(data.answer);
       setSourceBadge(data.source, data.engine_label);
-      // ذخیره برای بازخورد
       lastQuestion = question;
       lastAnswer = data.answer;
       lastSource = data.source || 'ai';
