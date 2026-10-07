@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<script src="https://unpkg.com/function-plot@1.24.4/dist/function-plot.js"></script>
 <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
@@ -28,7 +29,7 @@
 <main class="wrap">
   <section class="hero">
     <div class="hero-sigil">⧫</div>
-    <h1>Every equation has an answer.</h1>
+    <h1 id="heroTitle"></h1>
     <p>Submit your question. The engine will reveal the path step by step.</p>
     <div class="hero-divider">
       <span></span><span class="dot">◆</span><span></span>
@@ -40,7 +41,6 @@
       <span class="card-num">I</span>
       <span class="card-title">Choose Your Engine</span>
     </div>
-
     <div class="engines" id="engines">
       <button type="button" class="engine-btn active" data-engine="lightning">
         <span class="eng-icon">⚡</span>
@@ -50,17 +50,17 @@
       <button type="button" class="engine-btn" data-engine="reasoning">
         <span class="eng-icon">🧠</span>
         <span class="eng-name">Reasoning</span>
-        <span class="eng-sub">Deep logic · Groq</span>
+        <span class="eng-sub">Deep · Groq</span>
       </button>
       <button type="button" class="engine-btn" data-engine="gemini">
         <span class="eng-icon">🌐</span>
         <span class="eng-name">Gemini</span>
-        <span class="eng-sub">Google · OpenRouter</span>
+        <span class="eng-sub">Google · OR</span>
       </button>
       <button type="button" class="engine-btn" data-engine="deepseek">
         <span class="eng-icon">🔷</span>
         <span class="eng-name">DeepSeek</span>
-        <span class="eng-sub">Math specialist</span>
+        <span class="eng-sub">Math · OR</span>
       </button>
     </div>
   </section>
@@ -71,20 +71,28 @@
       <span class="card-title">Enter Your Equation</span>
     </div>
 
+    <div class="mode-tabs">
+      <button type="button" class="mode-tab active" data-mode="solve">Solve</button>
+      <button type="button" class="mode-tab" data-mode="chat">Chat</button>
+      <button type="button" class="mode-tab" id="clearChatBtn" title="Clear chat">✕</button>
+    </div>
+
     <form id="solveForm">
       <div class="field">
         <label for="question">Type your problem</label>
-        <textarea id="question" name="question" placeholder="e.g., 2x + 5 = 15"></textarea>
+        <div class="textarea-wrap">
+          <textarea id="question" name="question" placeholder="e.g., 2x + 5 = 15   or   y = x^2"></textarea>
+          <button type="button" class="clear-btn" id="clearInputBtn" title="Clear">✕</button>
+        </div>
 
         <div class="math-kb">
           <div class="kb-tabs">
             <button type="button" class="kb-tab active" data-tab="basic">Basic</button>
             <button type="button" class="kb-tab" data-tab="power">Powers</button>
-            <button type="button" class="kb-tab" data-tab="trig">Trigonometry</button>
+            <button type="button" class="kb-tab" data-tab="trig">Trig</button>
             <button type="button" class="kb-tab" data-tab="calc">Calculus</button>
-            <button type="button" class="kb-tab" data-tab="log">Logarithms</button>
+            <button type="button" class="kb-tab" data-tab="log">Logs</button>
           </div>
-
           <div class="kb-panel active" data-panel="basic">
             <button type="button" data-insert="+">+</button>
             <button type="button" data-insert="-">−</button>
@@ -99,7 +107,6 @@
             <button type="button" data-insert="|">|</button>
             <button type="button" data-insert="%">%</button>
           </div>
-
           <div class="kb-panel" data-panel="power">
             <button type="button" data-insert="^2">x²</button>
             <button type="button" data-insert="^3">x³</button>
@@ -114,7 +121,6 @@
             <button type="button" data-insert="}">}</button>
             <button type="button" data-insert="!">!</button>
           </div>
-
           <div class="kb-panel" data-panel="trig">
             <button type="button" data-insert="sin(">sin</button>
             <button type="button" data-insert="cos(">cos</button>
@@ -129,7 +135,6 @@
             <button type="button" data-insert="theta">θ</button>
             <button type="button" data-insert="deg">°</button>
           </div>
-
           <div class="kb-panel" data-panel="calc">
             <button type="button" data-insert="integral ">∫</button>
             <button type="button" data-insert="d/dx ">d/dx</button>
@@ -144,7 +149,6 @@
             <button type="button" data-insert="int_0^1 ">∫₀¹</button>
             <button type="button" data-insert="sum_{n=1} ">∑n</button>
           </div>
-
           <div class="kb-panel" data-panel="log">
             <button type="button" data-insert="log(">log</button>
             <button type="button" data-insert="ln(">ln</button>
@@ -176,7 +180,7 @@
       </div>
 
       <button type="submit" class="solve-btn" id="solveBtn">
-        <span class="btn-text">REVEAL THE ANSWER</span>
+        <span class="btn-text" id="btnText">REVEAL THE ANSWER</span>
         <span class="btn-loader" hidden></span>
       </button>
     </form>
@@ -186,9 +190,24 @@
     <div class="card-head">
       <span class="card-num">III</span>
       <span class="card-title">The Revelation</span>
-      <button class="copy-btn" id="copyBtn" title="Copy">⧉</button>
+      <div class="result-actions">
+        <button class="copy-btn" id="copyBtn" title="Copy">⧉</button>
+        <button class="copy-btn" id="shareBtn" title="Share">↗</button>
+      </div>
     </div>
     <div class="result-body" id="resultBody"></div>
+    <div class="graph-wrap" id="graphWrap" hidden>
+      <div id="graph"></div>
+    </div>
+  </section>
+
+  <section class="history" id="historySection" hidden>
+    <div class="card-head">
+      <span class="card-num">IV</span>
+      <span class="card-title">Recent Questions</span>
+      <button class="copy-btn" id="clearHistoryBtn" title="Clear all">✕</button>
+    </div>
+    <div class="history-list" id="historyList"></div>
   </section>
 
   <section class="error" id="errorBox" hidden></section>
@@ -208,16 +227,51 @@ const imageInput = document.getElementById('imageInput');
 const uploadArea = document.getElementById('uploadArea');
 const preview = document.getElementById('preview');
 const solveBtn = document.getElementById('solveBtn');
-const btnText = solveBtn.querySelector('.btn-text');
+const btnText = document.getElementById('btnText');
 const btnLoader = solveBtn.querySelector('.btn-loader');
 const resultSection = document.getElementById('result');
 const resultBody = document.getElementById('resultBody');
+const graphWrap = document.getElementById('graphWrap');
 const errorBox = document.getElementById('errorBox');
 const copyBtn = document.getElementById('copyBtn');
+const shareBtn = document.getElementById('shareBtn');
+const historySection = document.getElementById('historySection');
+const historyList = document.getElementById('historyList');
+const clearInputBtn = document.getElementById('clearInputBtn');
+const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+const clearChatBtn = document.getElementById('clearChatBtn');
 
 let selectedEngine = 'lightning';
+let currentMode = 'solve';
+let lastAnswer = '';
+let sessionId = localStorage.getItem('solver_session') || ('s_' + Math.random().toString(36).substring(2, 12));
+localStorage.setItem('solver_session', sessionId);
 
-/* ============ انتخاب موتور ============ */
+/* ============ Typewriter hero ============ */
+(function typeHero() {
+  const target = document.getElementById('heroTitle');
+  const text = 'Every equation has an answer.';
+  let i = 0;
+  target.innerHTML = '';
+  const cursor = '<span class="tw-cursor">▊</span>';
+  function step() {
+    if (i <= text.length) {
+      target.innerHTML = text.substring(0, i) + cursor;
+      i++;
+      setTimeout(step, 55);
+    }
+  }
+  step();
+})();
+
+/* ============ Engine selection ============ */
+fetch('/api/engines').then(r => r.json()).then(data => {
+  data.engines.forEach(e => {
+    const btn = document.querySelector(`.engine-btn[data-engine="${e.key}"]`);
+    if (btn && !e.available) btn.disabled = true;
+  });
+}).catch(() => {});
+
 document.querySelectorAll('.engine-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     if (btn.disabled) return;
@@ -227,7 +281,26 @@ document.querySelectorAll('.engine-btn').forEach(btn => {
   });
 });
 
-/* ============ کیبورد ریاضی ============ */
+/* ============ Mode tabs ============ */
+document.querySelectorAll('.mode-tab[data-mode]').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.mode-tab[data-mode]').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    currentMode = tab.getAttribute('data-mode');
+  });
+});
+
+clearChatBtn.addEventListener('click', async () => {
+  await fetch('/api/clear_chat', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({session_id: sessionId})
+  });
+  clearChatBtn.textContent = '✓';
+  setTimeout(() => clearChatBtn.textContent = '✕', 1200);
+});
+
+/* ============ Math keyboard ============ */
 document.querySelectorAll('.kb-tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.kb-tab').forEach(t => t.classList.remove('active'));
@@ -238,29 +311,46 @@ document.querySelectorAll('.kb-tab').forEach(tab => {
 });
 
 document.querySelectorAll('.math-kb [data-insert]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    insertAtCursor(questionInput, btn.getAttribute('data-insert'));
-  });
+  btn.addEventListener('click', () => insertAtCursor(questionInput, btn.getAttribute('data-insert')));
 });
 
 function insertAtCursor(textarea, text) {
   const start = textarea.selectionStart;
   const end = textarea.selectionEnd;
-  const value = textarea.value;
-  textarea.value = value.substring(0, start) + text + value.substring(end);
-  const newPos = start + text.length;
-  textarea.selectionStart = textarea.selectionEnd = newPos;
+  const v = textarea.value;
+  textarea.value = v.substring(0, start) + text + v.substring(end);
+  const p = start + text.length;
+  textarea.selectionStart = textarea.selectionEnd = p;
   textarea.focus();
+  autoResize();
 }
 
-/* ============ آپلود عکس ============ */
-uploadArea.addEventListener('click', () => imageInput.click());
+/* ============ Auto resize + clear input ============ */
+function autoResize() {
+  questionInput.style.height = 'auto';
+  questionInput.style.height = Math.min(questionInput.scrollHeight, 260) + 'px';
+}
+questionInput.addEventListener('input', autoResize);
+autoResize();
 
+clearInputBtn.addEventListener('click', () => {
+  questionInput.value = '';
+  questionInput.style.height = '';
+  autoResize();
+  imageInput.value = '';
+  preview.style.display = 'none';
+  preview.innerHTML = '';
+  uploadArea.querySelector('.upload-text').style.display = 'flex';
+  questionInput.focus();
+});
+
+/* ============ Upload ============ */
+uploadArea.addEventListener('click', () => imageInput.click());
 imageInput.addEventListener('change', () => {
   const file = imageInput.files[0];
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = (e) => {
+  reader.onload = e => {
     preview.innerHTML = `<img src="${e.target.result}" alt="preview">`;
     preview.style.display = 'block';
     uploadArea.querySelector('.upload-text').style.display = 'none';
@@ -268,61 +358,146 @@ imageInput.addEventListener('change', () => {
   reader.readAsDataURL(file);
 });
 
-/* ============ ارسال ============ */
+/* ============ History (localStorage) ============ */
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem('solver_history') || '[]'); } catch { return []; }
+}
+function setHistory(h) {
+  localStorage.setItem('solver_history', JSON.stringify(h.slice(0, 8)));
+  renderHistory();
+}
+function addToHistory(q, a, engine) {
+  const h = getHistory();
+  h.unshift({ q, a, engine, t: Date.now() });
+  setHistory(h);
+}
+function renderHistory() {
+  const h = getHistory();
+  if (h.length === 0) { historySection.hidden = true; return; }
+  historySection.hidden = false;
+  historyList.innerHTML = '';
+  h.forEach((item, idx) => {
+    const el = document.createElement('div');
+    el.className = 'history-item';
+    el.innerHTML = `<div class="h-q">${escapeHtml(item.q)}</div><div class="h-meta">${item.engine} · ${new Date(item.t).toLocaleString()}</div>`;
+    el.addEventListener('click', () => {
+      questionInput.value = item.q;
+      autoResize();
+      resultBody.innerHTML = formatAnswer(item.a);
+      resultSection.hidden = false;
+      lastAnswer = item.a;
+      tryPlotGraph(item.q);
+      setTimeout(renderMath, 50);
+      resultSection.scrollIntoView({behavior: 'smooth', block: 'start'});
+    });
+    historyList.appendChild(el);
+  });
+}
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+clearHistoryBtn.addEventListener('click', () => {
+  localStorage.removeItem('solver_history');
+  renderHistory();
+});
+renderHistory();
+
+/* ============ Share ============ */
+shareBtn.addEventListener('click', async () => {
+  const url = window.location.origin + '/?q=' + encodeURIComponent(questionInput.value);
+  try {
+    await navigator.clipboard.writeText(url);
+    shareBtn.textContent = '✓';
+    setTimeout(() => shareBtn.textContent = '↗', 1500);
+  } catch {}
+});
+
+/* ============ Load from URL ============ */
+(function loadFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  const q = params.get('q');
+  if (q) {
+    questionInput.value = q;
+    autoResize();
+    setTimeout(() => form.dispatchEvent(new Event('submit')), 400);
+  }
+})();
+
+/* ============ Graph plotting ============ */
+function tryPlotGraph(question) {
+  const m = question.match(/^\s*(?:y|f\s*\(\s*x\s*\))\s*=\s*(.+)$/i);
+  if (!m) { graphWrap.hidden = true; return; }
+  const fn = m[1].replace(/\^/g, '^').trim();
+  graphWrap.hidden = false;
+  setTimeout(() => {
+    try {
+      document.getElementById('graph').innerHTML = '';
+      functionPlot({
+        target: '#graph',
+        width: Math.min(700, document.querySelector('.result').clientWidth - 40),
+        height: 300,
+        grid: true,
+        xAxis: { domain: [-10, 10] },
+        yAxis: { domain: [-10, 10] },
+        data: [{ fn: fn, color: '#ffffff' }]
+      });
+    } catch (e) { graphWrap.hidden = true; }
+  }, 80);
+}
+
+/* ============ Submit ============ */
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   errorBox.hidden = true;
   resultSection.hidden = true;
+  graphWrap.hidden = true;
 
   const question = questionInput.value.trim();
   const hasImage = imageInput.files.length > 0;
-
-  if (!question && !hasImage) {
-    showError('Provide a question or an image.');
-    return;
-  }
+  if (!question && !hasImage) { showError('Provide a question or an image.'); return; }
 
   solveBtn.disabled = true;
-  btnText.hidden = true;
+  btnText.textContent = 'CALCULATING';
+  let dots = 0;
+  const dotsTimer = setInterval(() => {
+    dots = (dots + 1) % 4;
+    btnText.textContent = 'CALCULATING' + '.'.repeat(dots);
+  }, 400);
   btnLoader.hidden = false;
 
-  const formData = new FormData();
-  if (question) formData.append('question', question);
-  formData.append('engine', selectedEngine);
-  if (hasImage) formData.append('image', imageInput.files[0]);
+  const fd = new FormData();
+  if (question) fd.append('question', question);
+  fd.append('engine', selectedEngine);
+  fd.append('mode', currentMode);
+  fd.append('session_id', sessionId);
+  if (hasImage) fd.append('image', imageInput.files[0]);
 
   try {
-    const res = await fetch('/api/solve', { method: 'POST', body: formData });
+    const res = await fetch('/api/solve', { method: 'POST', body: fd });
     const data = await res.json();
-
     if (data.ok) {
+      lastAnswer = data.answer;
       resultBody.innerHTML = formatAnswer(data.answer);
       resultSection.hidden = false;
-      resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      resultSection.scrollIntoView({behavior: 'smooth', block: 'start'});
       setTimeout(renderMath, 50);
+      tryPlotGraph(question);
+      if (currentMode === 'solve') addToHistory(question, data.answer, selectedEngine);
     } else {
-      let msg = '⚠ ' + (data.error || 'Something went wrong.');
-      if (data.detail) msg += '\n\n' + data.detail;
-      errorBox.textContent = msg;
-      errorBox.style.whiteSpace = 'pre-wrap';
-      errorBox.hidden = false;
-      errorBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      showError((data.error || 'Error') + (data.detail ? ' — ' + data.detail : ''));
     }
   } catch (err) {
     showError('Network error: ' + err.message);
   } finally {
+    clearInterval(dotsTimer);
     solveBtn.disabled = false;
-    btnText.hidden = false;
+    btnText.textContent = 'REVEAL THE ANSWER';
     btnLoader.hidden = true;
   }
 });
 
 function formatAnswer(text) {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/\n/g, '<br>');
+  return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
 }
 
 function renderMath() {
@@ -340,9 +515,10 @@ function renderMath() {
 }
 
 function showError(msg) {
-  errorBox.textContent = msg;
+  errorBox.textContent = '⚠ ' + msg;
   errorBox.style.whiteSpace = 'pre-wrap';
   errorBox.hidden = false;
+  errorBox.scrollIntoView({behavior: 'smooth', block: 'start'});
 }
 
 copyBtn.addEventListener('click', () => {
