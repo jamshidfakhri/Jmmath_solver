@@ -30,6 +30,89 @@
       <div class="field">
         <label>سوالت رو بنویس:</label>
         <textarea id="question" name="question" placeholder="مثلاً: معادله x² + 5x + 6 = 0 رو حل کن."></textarea>
+
+        <!-- ============ کیبورد ریاضی ============ -->
+        <div class="math-kb" id="mathKb">
+          <div class="kb-tabs">
+            <button type="button" class="kb-tab active" data-tab="basic">پایه</button>
+            <button type="button" class="kb-tab" data-tab="power">توان و رادیکال</button>
+            <button type="button" class="kb-tab" data-tab="trig">مثلثات</button>
+            <button type="button" class="kb-tab" data-tab="calc">دیفرانسیل</button>
+            <button type="button" class="kb-tab" data-tab="log">لگاریتم</button>
+          </div>
+
+          <div class="kb-panel active" data-panel="basic">
+            <button type="button" data-insert="+" title="جمع">+</button>
+            <button type="button" data-insert="-" title="تفریق">−</button>
+            <button type="button" data-insert="×" title="ضرب">×</button>
+            <button type="button" data-insert="÷" title="تقسیم">÷</button>
+            <button type="button" data-insert="=" title="مساوی">=</button>
+            <button type="button" data-insert="(" title="پرانتز باز">(</button>
+            <button type="button" data-insert=")" title="پرانتز بسته">)</button>
+            <button type="button" data-insert="." title="ممیز">.</button>
+            <button type="button" data-insert="," title="کاما">,</button>
+            <button type="button" data-insert="≠" title="نامساوی">≠</button>
+            <button type="button" data-insert="≤" title="کوچکتر یا مساوی">≤</button>
+            <button type="button" data-insert="≥" title="بزرگتر یا مساوی">≥</button>
+          </div>
+
+          <div class="kb-panel" data-panel="power">
+            <button type="button" data-insert="^2" title="توان دو">x²</button>
+            <button type="button" data-insert="^3" title="توان سه">x³</button>
+            <button type="button" data-insert="^" title="توان n">xⁿ</button>
+            <button type="button" data-insert="√(" title="رادیکال">√</button>
+            <button type="button" data-insert="∛(" title="رادیکال سوم">∛</button>
+            <button type="button" data-insert="^(1/2)" title="جذر">^(1/2)</button>
+            <button type="button" data-insert="^(1/3)" title="رادیکال سوم">^(1/3)</button>
+            <button type="button" data-insert="10^" title="ده به توان">10^</button>
+            <button type="button" data-insert="e^" title="e به توان">e^</button>
+            <button type="button" data-insert="|" title="قدر مطلق">|</button>
+            <button type="button" data-insert="[" title="براکت باز">[</button>
+            <button type="button" data-insert="]" title="براکت بسته">]</button>
+          </div>
+
+          <div class="kb-panel" data-panel="trig">
+            <button type="button" data-insert="sin(" title="سینوس">sin</button>
+            <button type="button" data-insert="cos(" title="کسینوس">cos</button>
+            <button type="button" data-insert="tan(" title="تانژانت">tan</button>
+            <button type="button" data-insert="cot(" title="کتانژانت">cot</button>
+            <button type="button" data-insert="sec(" title="سکانت">sec</button>
+            <button type="button" data-insert="csc(" title="کسکانت">csc</button>
+            <button type="button" data-insert="asin(" title="آرک‌سینوس">sin⁻¹</button>
+            <button type="button" data-insert="acos(" title="آرک‌کسینوس">cos⁻¹</button>
+            <button type="button" data-insert="atan(" title="آرک‌تانژانت">tan⁻¹</button>
+            <button type="button" data-insert="π" title="پی">π</button>
+            <button type="button" data-insert="θ" title="تتا">θ</button>
+            <button type="button" data-insert="°" title="درجه">°</button>
+          </div>
+
+          <div class="kb-panel" data-panel="calc">
+            <button type="button" data-insert="∫(" title="انتگرال">∫</button>
+            <button type="button" data-insert="d/dx(" title="مشتق">d/dx</button>
+            <button type="button" data-insert="∑(" title="سیگما">∑</button>
+            <button type="button" data-insert="∏(" title="پی‌بزرگ">∏</button>
+            <button type="button" data-insert="lim(" title="حد">lim</button>
+            <button type="button" data-insert="∞" title="بی‌نهایت">∞</button>
+            <button type="button" data-insert="Δ" title="دلتا">Δ</button>
+            <button type="button" data-insert="∂" title="مشتق جزئی">∂</button>
+            <button type="button" data-insert="→" title="میل به">→</button>
+            <button type="button" data-insert="n→∞" title="n به بی‌نهایت">n→∞</button>
+          </div>
+
+          <div class="kb-panel" data-panel="log">
+            <button type="button" data-insert="log(" title="لگاریتم">log</button>
+            <button type="button" data-insert="ln(" title="لگاریتم طبیعی">ln</button>
+            <button type="button" data-insert="log2(" title="لگاریتم پایه ۲">log₂</button>
+            <button type="button" data-insert="log10(" title="لگاریتم پایه ۱۰">log₁₀</button>
+            <button type="button" data-insert="e" title="عدد نپر">e</button>
+            <button type="button" data-insert="/" title="کسر">/</button>
+            <button type="button" data-insert="{" title="آکولاد باز">{</button>
+            <button type="button" data-insert="}" title="آکولاد بسته">}</button>
+            <button type="button" data-insert="%" title="درصد">%</button>
+            <button type="button" data-insert="!" title="فاکتوریل">!</button>
+          </div>
+        </div>
+        <!-- ============ پایان کیبورد ریاضی ============ -->
       </div>
 
       <div class="field">
@@ -81,6 +164,35 @@ const resultBody = document.getElementById('resultBody');
 const errorBox = document.getElementById('errorBox');
 const copyBtn = document.getElementById('copyBtn');
 
+/* ============ کیبورد ریاضی ============ */
+document.querySelectorAll('.kb-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.kb-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.kb-panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.querySelector(`.kb-panel[data-panel="${tab.dataset.tab}"]`).classList.add('active');
+  });
+});
+
+document.querySelectorAll('.math-kb [data-insert]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const text = btn.getAttribute('data-insert');
+    insertAtCursor(questionInput, text);
+  });
+});
+
+function insertAtCursor(textarea, text) {
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  const value = textarea.value;
+  const newValue = value.substring(0, start) + text + value.substring(end);
+  textarea.value = newValue;
+  const newPos = start + text.length;
+  textarea.selectionStart = textarea.selectionEnd = newPos;
+  textarea.focus();
+}
+
+/* ============ آپلود عکس ============ */
 uploadArea.addEventListener('click', () => imageInput.click());
 
 imageInput.addEventListener('change', () => {
@@ -95,6 +207,7 @@ imageInput.addEventListener('change', () => {
   reader.readAsDataURL(file);
 });
 
+/* ============ ارسال فرم ============ */
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   errorBox.hidden = true;
@@ -127,12 +240,8 @@ form.addEventListener('submit', async (e) => {
       setTimeout(renderMath, 50);
     } else {
       let msg = '⚠️ ' + (data.error || 'خطایی پیش اومد.');
-      if (data.detail) {
-        msg += '\n\n🔍 جزئیات خطا:\n' + data.detail;
-      }
-      if (data.trace) {
-        msg += '\n\n📋 متن کامل:\n' + data.trace;
-      }
+      if (data.detail) msg += '\n\n🔍 جزئیات خطا:\n' + data.detail;
+      if (data.trace) msg += '\n\n📋 متن کامل:\n' + data.trace;
       errorBox.textContent = msg;
       errorBox.style.whiteSpace = 'pre-wrap';
       errorBox.hidden = false;
@@ -148,14 +257,13 @@ form.addEventListener('submit', async (e) => {
 });
 
 function formatAnswer(text) {
-  let html = text
+  return text
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/`(.+?)`/g, '<code>$1</code>')
     .replace(/\n/g, '<br>');
-  return html;
 }
 
 function renderMath() {
