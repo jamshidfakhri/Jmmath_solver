@@ -87,13 +87,46 @@
 
         <div class="math-kb">
           <div class="kb-tabs">
-            <button type="button" class="kb-tab active" data-tab="basic">Basic</button>
+            <button type="button" class="kb-tab active" data-tab="num">123</button>
+            <button type="button" class="kb-tab" data-tab="basic">Basic</button>
             <button type="button" class="kb-tab" data-tab="power">Powers</button>
             <button type="button" class="kb-tab" data-tab="trig">Trig</button>
             <button type="button" class="kb-tab" data-tab="calc">Calculus</button>
             <button type="button" class="kb-tab" data-tab="log">Logs</button>
           </div>
-          <div class="kb-panel active" data-panel="basic">
+
+          <!-- ============ Numeric Panel (Default) ============ -->
+          <div class="kb-panel active" data-panel="num">
+            <button type="button" data-insert="7">7</button>
+            <button type="button" data-insert="8">8</button>
+            <button type="button" data-insert="9">9</button>
+            <button type="button" data-insert="/">÷</button>
+            <button type="button" data-insert="*">×</button>
+            <button type="button" class="kb-action" data-action="backspace" title="Backspace">⌫</button>
+
+            <button type="button" data-insert="4">4</button>
+            <button type="button" data-insert="5">5</button>
+            <button type="button" data-insert="6">6</button>
+            <button type="button" data-insert="+">+</button>
+            <button type="button" data-insert="-">−</button>
+            <button type="button" class="kb-action" data-action="clear" title="Clear">C</button>
+
+            <button type="button" data-insert="1">1</button>
+            <button type="button" data-insert="2">2</button>
+            <button type="button" data-insert="3">3</button>
+            <button type="button" data-insert="(">(</button>
+            <button type="button" data-insert=")">)</button>
+            <button type="button" data-insert="^">^</button>
+
+            <button type="button" data-insert="0">0</button>
+            <button type="button" data-insert=".">.</button>
+            <button type="button" data-insert=",">,</button>
+            <button type="button" data-insert="=">=</button>
+            <button type="button" data-insert="x">x</button>
+            <button type="button" data-insert="pi">π</button>
+          </div>
+
+          <div class="kb-panel" data-panel="basic">
             <button type="button" data-insert="+">+</button>
             <button type="button" data-insert="-">−</button>
             <button type="button" data-insert="*">×</button>
@@ -107,6 +140,7 @@
             <button type="button" data-insert="|">|</button>
             <button type="button" data-insert="%">%</button>
           </div>
+
           <div class="kb-panel" data-panel="power">
             <button type="button" data-insert="^2">x²</button>
             <button type="button" data-insert="^3">x³</button>
@@ -121,6 +155,7 @@
             <button type="button" data-insert="}">}</button>
             <button type="button" data-insert="!">!</button>
           </div>
+
           <div class="kb-panel" data-panel="trig">
             <button type="button" data-insert="sin(">sin</button>
             <button type="button" data-insert="cos(">cos</button>
@@ -135,6 +170,7 @@
             <button type="button" data-insert="theta">θ</button>
             <button type="button" data-insert="deg">°</button>
           </div>
+
           <div class="kb-panel" data-panel="calc">
             <button type="button" data-insert="integral ">∫</button>
             <button type="button" data-insert="d/dx ">d/dx</button>
@@ -149,6 +185,7 @@
             <button type="button" data-insert="int_0^1 ">∫₀¹</button>
             <button type="button" data-insert="sum_{n=1} ">∑n</button>
           </div>
+
           <div class="kb-panel" data-panel="log">
             <button type="button" data-insert="log(">log</button>
             <button type="button" data-insert="ln(">ln</button>
@@ -283,6 +320,7 @@ clearChatBtn.addEventListener('click', async () => {
   setTimeout(() => clearChatBtn.textContent = '✕', 1200);
 });
 
+/* ============ Keyboard ============ */
 document.querySelectorAll('.kb-tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.kb-tab').forEach(t => t.classList.remove('active'));
@@ -296,6 +334,19 @@ document.querySelectorAll('.math-kb [data-insert]').forEach(btn => {
   btn.addEventListener('click', () => insertAtCursor(questionInput, btn.getAttribute('data-insert')));
 });
 
+document.querySelectorAll('.math-kb [data-action="backspace"]').forEach(btn => {
+  btn.addEventListener('click', () => backspaceInInput(questionInput));
+});
+
+document.querySelectorAll('.math-kb [data-action="clear"]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    questionInput.value = '';
+    questionInput.style.height = '';
+    autoResize();
+    questionInput.focus();
+  });
+});
+
 function insertAtCursor(textarea, text) {
   const start = textarea.selectionStart;
   const end = textarea.selectionEnd;
@@ -303,6 +354,21 @@ function insertAtCursor(textarea, text) {
   textarea.value = v.substring(0, start) + text + v.substring(end);
   const p = start + text.length;
   textarea.selectionStart = textarea.selectionEnd = p;
+  textarea.focus();
+  autoResize();
+}
+
+function backspaceInInput(textarea) {
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  const v = textarea.value;
+  if (start === end && start > 0) {
+    textarea.value = v.substring(0, start - 1) + v.substring(end);
+    textarea.selectionStart = textarea.selectionEnd = start - 1;
+  } else if (start !== end) {
+    textarea.value = v.substring(0, start) + v.substring(end);
+    textarea.selectionStart = textarea.selectionEnd = start;
+  }
   textarea.focus();
   autoResize();
 }
