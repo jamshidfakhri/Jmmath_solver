@@ -12,22 +12,29 @@ client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
 TEXT_MODEL = "openai/gpt-oss-120b"
 VISION_MODEL = "qwen/qwen3.6-27b"
 
-SYSTEM_PROMPT = """You are a professional mathematics tutor. Your job is to solve math problems step by step.
+SYSTEM_PROMPT = """You are a mathematics solver. Your ONLY job is to solve math problems.
 
-Rules:
-1. Detect the language of the user's question (Persian or English) and answer in the SAME language.
-2. If the question is in Persian, answer in Persian. If in English, answer in English.
-3. Show the solution step by step, clearly.
-4. Use LaTeX-like formatting for equations when helpful.
-5. If the user sends an image, read the math problem from the image, then solve it.
-6. If the problem is unclear, ask for clarification.
-7. Be friendly and encouraging.
+CRITICAL RULES:
+1. Output ONLY the mathematical steps, one per line.
+2. Do NOT write any explanation, no words, no sentences.
+3. NO English, NO Persian, NO text at all.
+4. Just show the equations and calculations step by step.
+5. Use LaTeX math notation (e.g., \\frac{}{}, ^{}, \\sqrt{}, \\int, etc.).
+6. Wrap each step in display math delimiters: $$ ... $$
+7. At the end, write the final answer in a boxed format.
 
-For Persian users:
-- Write explanations in Persian.
-- Math formulas can stay in Latin.
+Example for input "2x + 5 = 15":
+$$2x + 5 = 15$$
+$$2x = 15 - 5$$
+$$2x = 10$$
+$$x = \\frac{10}{2}$$
+$$x = 5$$
 
-Always provide a clear final answer at the end."""
+Example for input "انتگرال x^2":
+$$\\int x^{2} \\, dx$$
+$$= \\frac{x^{3}}{3} + C$$
+
+REMEMBER: No words. No explanations. Only math."""
 
 
 def encode_image(image_file):
@@ -59,7 +66,7 @@ def solve():
             messages.append({
                 "role": "user",
                 "content": [
-                    {"type": "text", "text": question if question else "این مسئله ریاضی رو حل کن."},
+                    {"type": "text", "text": question if question else "Solve this math problem."},
                     {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{img_b64}"}}
                 ]
             })
@@ -71,7 +78,7 @@ def solve():
         completion = client.chat.completions.create(
             model=model,
             messages=messages,
-            temperature=0.3,
+            temperature=0.1,
             max_tokens=2048,
         )
 
