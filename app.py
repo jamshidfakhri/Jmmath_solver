@@ -1,5 +1,6 @@
 import os
 import base64
+import traceback
 from flask import Flask, render_template, request, jsonify
 from groq import Groq
 
@@ -78,8 +79,13 @@ def solve():
         return jsonify({"answer": answer, "ok": True})
 
     except Exception as e:
-        print("Error:", str(e))
-        return jsonify({"error": "خطا در پردازش سوال. دوباره امتحان کن."}), 500
+        error_detail = traceback.format_exc()
+        print("ERROR DETAIL:", error_detail, flush=True)
+        return jsonify({
+            "error": "خطا در پردازش سوال",
+            "detail": str(e),
+            "trace": error_detail[-500:]
+        }), 500
 
 
 @app.route("/ping")
