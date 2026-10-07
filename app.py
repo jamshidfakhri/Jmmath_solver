@@ -7,7 +7,7 @@ import threading
 import logging
 import operator as op
 from collections import OrderedDict
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, Response
 from groq import Groq
 from openai import OpenAI
 
@@ -21,6 +21,8 @@ logger = logging.getLogger("solver")
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "solver-secret-xyz")
+
+SITE_URL = os.environ.get("RENDER_EXTERNAL_URL", "https://jmmath-solver.onrender.com")
 
 # ==================== API Keys (from env only) ====================
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "").strip()
@@ -200,7 +202,7 @@ def cache_set(key, answer):
             _cache.popitem(last=False)
 
 
-# ==================== Rate Limiter (20/min) ====================
+# ==================== Rate Limiter ====================
 RATE_LIMIT_WINDOW = 60
 RATE_LIMIT_MAX = 20
 _rate_lock = threading.Lock()
@@ -246,11 +248,11 @@ def call_ai_engine(engine_key, question, mode, session_id):
 
     if engine["provider"] == "groq":
         if not groq_client:
-            raise RuntimeError("Groq client not initialized (missing API key)")
+            raise RuntimeError("Groq client not initialized")
         client = groq_client
     elif engine["provider"] == "openrouter":
         if not openrouter_client:
-            raise RuntimeError("OpenRouter client not initialized (missing API key)")
+            raise RuntimeError("OpenRouter client not initialized")
         client = openrouter_client
     else:
         raise RuntimeError("Unknown provider")
@@ -276,7 +278,12 @@ def call_ai_engine(engine_key, question, mode, session_id):
 # ==================== Routes ====================
 @app.route("/")
 def home():
-    return render_template("index.html")
+    return render_template("index.html", site_url=SITE_URL)
+
+
+@app.route("/about")
+def about():
+    return render_template("about.html", site_url=SITE_URL)
 
 
 @app.route("/health")
@@ -287,6 +294,41 @@ def health():
 @app.route("/ping")
 def ping():
     return jsonify({"ok": True})
+
+
+@app.route("/robots.txt")
+def robots():
+    txt = (
+        "User-agent: *\n"
+        "Allow: /\n"
+        "Disallow: /api/\n"
+        "\n"
+        f"Sitemap: {SITE_URL}/sitemap.xml\n"
+    )
+    return Response(txt, mimetype="text/plain")
+
+
+@app.route("/sitemap.xml")
+def sitemap():
+    today = time.strftime("%Y-%m-%d")
+    xml = (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        f'  <url>\n'
+        f'    <loc>{SITE_URL}/</loc>\n'
+        f'    <lastmod>{today}</lastmod>\n'
+        f'    <changefreq>weekly</changefreq>\n'
+        f'    <priority>1.0</priority>\n'
+        f'  </url>\n'
+        f'  <url>\n'
+        f'    <loc>{SITE_URL}/about</loc>\n'
+        f'    <lastmod>{today}</lastmod>\n'
+        f'    <changefreq>monthly</changefreq>\n'
+        f'    <priority>0.6</priority>\n'
+        f'  </url>\n'
+        '</urlset>\n'
+    )
+    return Response(xml, mimetype="application/xml")
 
 
 @app.route("/api/engines")
@@ -388,9 +430,7 @@ def solve():
 
             if answer is None:
                 logger.error(f"All engines failed. last_error_type={last_error_type}")
-                return jsonify({
-                    "error": "All engines are unavailable. Please try again in a moment."
-                }), 503
+                return jsonify({"error": "All engines are unavailable. Please try again in a moment."}), 503
 
             if mode == "chat" and session_id:
                 history = chat_histories.setdefault(session_id, [])
