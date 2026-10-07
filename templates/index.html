@@ -95,7 +95,6 @@
             <button type="button" class="kb-tab" data-tab="log">Logs</button>
           </div>
 
-          <!-- ============ Numeric Panel (Default) ============ -->
           <div class="kb-panel active" data-panel="num">
             <button type="button" data-insert="7">7</button>
             <button type="button" data-insert="8">8</button>
@@ -320,7 +319,6 @@ clearChatBtn.addEventListener('click', async () => {
   setTimeout(() => clearChatBtn.textContent = '✕', 1200);
 });
 
-/* ============ Keyboard ============ */
 document.querySelectorAll('.kb-tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.kb-tab').forEach(t => t.classList.remove('active'));
@@ -387,16 +385,19 @@ clearInputBtn.addEventListener('click', () => {
   questionInput.focus();
 });
 
-function setSourceBadge(source) {
+function setSourceBadge(source, engineUsedLabel) {
   if (!source) { sourceBadge.hidden = true; return; }
-  const map = {
-    calculator: { text: '⚡ INSTANT', cls: 'src-calc' },
-    cache:      { text: '📦 CACHED',  cls: 'src-cache' },
-    ai:         { text: '🧠 AI',      cls: 'src-ai' }
-  };
-  const m = map[source] || { text: source.toUpperCase(), cls: 'src-ai' };
-  sourceBadge.textContent = m.text;
-  sourceBadge.className = 'source-badge ' + m.cls;
+  if (source === 'calculator') {
+    sourceBadge.textContent = '⚡ INSTANT';
+    sourceBadge.className = 'source-badge src-calc';
+  } else if (source === 'cache') {
+    sourceBadge.textContent = '📦 CACHED';
+    sourceBadge.className = 'source-badge src-cache';
+  } else {
+    const label = engineUsedLabel || 'AI';
+    sourceBadge.textContent = '🧠 ' + label;
+    sourceBadge.className = 'source-badge src-ai';
+  }
   sourceBadge.hidden = false;
 }
 
@@ -430,9 +431,9 @@ function setHistory(h) {
   localStorage.setItem('solver_history', JSON.stringify(h.slice(0, 8)));
   renderHistory();
 }
-function addToHistory(q, a, engine, source) {
+function addToHistory(q, a, engine, source, engineUsedLabel) {
   const h = getHistory();
-  h.unshift({ q, a, engine, source, t: Date.now() });
+  h.unshift({ q, a, engine, source, engineUsedLabel, t: Date.now() });
   setHistory(h);
 }
 function renderHistory() {
@@ -448,7 +449,7 @@ function renderHistory() {
       questionInput.value = item.q;
       autoResize();
       resultBody.innerHTML = formatAnswer(item.a);
-      setSourceBadge(item.source || 'ai');
+      setSourceBadge(item.source || 'ai', item.engineUsedLabel);
       resultSection.hidden = false;
       tryPlotGraph(item.q);
       setTimeout(renderMath, 50);
@@ -521,9 +522,17 @@ form.addEventListener('submit', async (e) => {
   let dots = 0;
   const dotsTimer = setInterval(() => {
     dots = (dots + 1) % 4;
-    btnText.textContent = 'CALCULATING' + '.'.repeat(dots);
+    // اگه از ۸ ثانیه گذشته، متن عوض شده، پس نقطه‌ها رو اضافه نکن
+    if (btnText.textContent.indexOf('WAKING') === -1) {
+      btnText.textContent = 'CALCULATING' + '.'.repeat(dots);
+    }
   }, 400);
   btnLoader.hidden = false;
+
+  // بعد از ۸ ثانیه، پیام «بیدار کردن موتور»
+  const wakeTimer = setTimeout(() => {
+    btnText.textContent = 'WAKING UP ENGINE';
+  }, 8000);
 
   const fd = new FormData();
   fd.append('question', question);
@@ -542,18 +551,21 @@ form.addEventListener('submit', async (e) => {
 
     if (data.ok) {
       resultBody.innerHTML = formatAnswer(data.answer);
-      setSourceBadge(data.source);
+      setSourceBadge(data.source, data.engine_label);
       resultSection.hidden = false;
       resultSection.scrollIntoView({behavior: 'smooth', block: 'start'});
       setTimeout(renderMath, 50);
       tryPlotGraph(question);
-      if (currentMode === 'solve') addToHistory(question, data.answer, selectedEngine, data.source);
+      if (currentMode === 'solve') {
+        addToHistory(question, data.answer, data.engine_used || selectedEngine, data.source, data.engine_label);
+      }
     } else {
       showError((data.error || 'Error') + (data.detail ? ' — ' + data.detail : ''));
     }
   } catch (err) {
     showError('Network error: ' + err.message);
   } finally {
+    clearTimeout(wakeTimer);
     clearInterval(dotsTimer);
     solveBtn.disabled = false;
     btnText.textContent = 'REVEAL THE ANSWER';
