@@ -247,7 +247,7 @@ let lastAnswer = '';
 let sessionId = localStorage.getItem('solver_session') || ('s_' + Math.random().toString(36).substring(2, 12));
 localStorage.setItem('solver_session', sessionId);
 
-/* ============ Typewriter hero ============ */
+/* ============ Typewriter ============ */
 (function typeHero() {
   const target = document.getElementById('heroTitle');
   const text = 'Every equation has an answer.';
@@ -264,7 +264,7 @@ localStorage.setItem('solver_session', sessionId);
   step();
 })();
 
-/* ============ Engine selection ============ */
+/* ============ Engines ============ */
 fetch('/api/engines').then(r => r.json()).then(data => {
   data.engines.forEach(e => {
     const btn = document.querySelector(`.engine-btn[data-engine="${e.key}"]`);
@@ -281,7 +281,7 @@ document.querySelectorAll('.engine-btn').forEach(btn => {
   });
 });
 
-/* ============ Mode tabs ============ */
+/* ============ Mode ============ */
 document.querySelectorAll('.mode-tab[data-mode]').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.mode-tab[data-mode]').forEach(t => t.classList.remove('active'));
@@ -300,7 +300,7 @@ clearChatBtn.addEventListener('click', async () => {
   setTimeout(() => clearChatBtn.textContent = '✕', 1200);
 });
 
-/* ============ Math keyboard ============ */
+/* ============ Keyboard ============ */
 document.querySelectorAll('.kb-tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.kb-tab').forEach(t => t.classList.remove('active'));
@@ -325,7 +325,7 @@ function insertAtCursor(textarea, text) {
   autoResize();
 }
 
-/* ============ Auto resize + clear input ============ */
+/* ============ Auto resize + clear ============ */
 function autoResize() {
   questionInput.style.height = 'auto';
   questionInput.style.height = Math.min(questionInput.scrollHeight, 260) + 'px';
@@ -358,7 +358,7 @@ imageInput.addEventListener('change', () => {
   reader.readAsDataURL(file);
 });
 
-/* ============ History (localStorage) ============ */
+/* ============ History ============ */
 function getHistory() {
   try { return JSON.parse(localStorage.getItem('solver_history') || '[]'); } catch { return []; }
 }
@@ -376,7 +376,7 @@ function renderHistory() {
   if (h.length === 0) { historySection.hidden = true; return; }
   historySection.hidden = false;
   historyList.innerHTML = '';
-  h.forEach((item, idx) => {
+  h.forEach(item => {
     const el = document.createElement('div');
     el.className = 'history-item';
     el.innerHTML = `<div class="h-q">${escapeHtml(item.q)}</div><div class="h-meta">${item.engine} · ${new Date(item.t).toLocaleString()}</div>`;
@@ -412,7 +412,6 @@ shareBtn.addEventListener('click', async () => {
   } catch {}
 });
 
-/* ============ Load from URL ============ */
 (function loadFromURL() {
   const params = new URLSearchParams(window.location.search);
   const q = params.get('q');
@@ -423,11 +422,11 @@ shareBtn.addEventListener('click', async () => {
   }
 })();
 
-/* ============ Graph plotting ============ */
+/* ============ Graph ============ */
 function tryPlotGraph(question) {
   const m = question.match(/^\s*(?:y|f\s*\(\s*x\s*\))\s*=\s*(.+)$/i);
   if (!m) { graphWrap.hidden = true; return; }
-  const fn = m[1].replace(/\^/g, '^').trim();
+  const fn = m[1].trim();
   graphWrap.hidden = false;
   setTimeout(() => {
     try {
