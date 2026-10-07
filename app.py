@@ -18,10 +18,26 @@ openrouter_client = OpenAI(
 ) if OPENROUTER_API_KEY else None
 
 ENGINES = {
-    "lightning": {"provider": "groq", "text": "openai/gpt-oss-120b", "vision": "qwen/qwen3.6-27b"},
-    "reasoning": {"provider": "groq", "text": "deepseek-r1-distill-llama-70b", "vision": "qwen/qwen3.6-27b"},
-    "gemini": {"provider": "openrouter", "text": "google/gemini-2.0-flash-exp:free", "vision": "google/gemini-2.0-flash-exp:free"},
-    "deepseek": {"provider": "openrouter", "text": "deepseek/deepseek-chat:free", "vision": "deepseek/deepseek-chat:free"},
+    "lightning": {
+        "provider": "groq",
+        "text": "openai/gpt-oss-120b",
+        "vision": "qwen/qwen3.6-27b",
+    },
+    "reasoning": {
+        "provider": "groq",
+        "text": "deepseek-r1-distill-llama-70b",
+        "vision": "qwen/qwen3.6-27b",
+    },
+    "gemini": {
+        "provider": "openrouter",
+        "text": "google/gemini-2.0-flash-exp:free",
+        "vision": "google/gemini-2.0-flash-exp:free",
+    },
+    "deepseek": {
+        "provider": "openrouter",
+        "text": "deepseek/deepseek-chat:free",
+        "vision": "deepseek/deepseek-chat:free",
+    },
 }
 
 SYSTEM_PROMPT = """You are a mathematics solver. Your ONLY job is to solve math problems.
@@ -34,11 +50,9 @@ CRITICAL RULES:
 5. Use LaTeX math notation.
 6. Wrap each step in display math delimiters: $$ ... $$
 7. At the end, write the final answer in a boxed format.
-8. If the user's input looks like a function definition (y = ..., f(x) = ...), just simplify it mathematically.
 
 REMEMBER: No words. No explanations. Only math."""
 
-# chat histories: {session_id: [messages]}
 chat_histories = {}
 MAX_HISTORY = 8
 
@@ -56,8 +70,13 @@ def home():
 def engines():
     out = []
     for key, val in ENGINES.items():
-        available = (val["provider"] == "groq" and groq_client) or (val["provider"] == "openrouter" and openrouter_client)
-        out.append({"key": key, "provider": val["provider"], "available": bool(available)})
+        if val["provider"] == "groq":
+            available = groq_client is not None
+        elif val["provider"] == "openrouter":
+            available = openrouter_client is not None
+        else:
+            available = False
+        out.append({"key": key, "provider": val["provider"], "available": available})
     return jsonify({"engines": out})
 
 
@@ -90,12 +109,13 @@ def solve():
             if not groq_client:
                 return jsonify({"error": "Groq not configured"}), 500
             client = groq_client
-        else:
+        elif engine["provider"] == "openrouter":
             if not openrouter_client:
-                return jsonify({"error": "OpenRouter not configured"}), 500
+                return jsonify({"error": "OpenRouter key not configured"}), 500
             client = openrouter_client
+        else:
+            return jsonify({"error": "Unknown provider"}), 500
 
-        # ============ ساخت پیام‌ها ============
         if mode == "chat" and session_id:
             history = chat_histories.setdefault(session_id, [])
             msgs = [{"role": "system", "content": SYSTEM_PROMPT}] + history
@@ -124,7 +144,6 @@ def solve():
         )
         answer = completion.choices[0].message.content
 
-        # ذخیره در تاریخچه چت
         if mode == "chat" and session_id:
             history = chat_histories[session_id]
             history.append({"role": "user", "content": question})
