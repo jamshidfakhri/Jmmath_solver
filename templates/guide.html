@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Guide — How to Use THE SOLVER</title>
+<meta name="description" content="Learn how to write integrals, derivatives, differential equations, and more in THE SOLVER. Full syntax guide with examples.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="{{ site_url }}/guide">
+
+<meta property="og:type" content="article">
+<meta property="og:url" content="{{ site_url }}/guide">
+<meta property="og:title" content="Guide — How to Use THE SOLVER">
+<meta property="og:description" content="Full syntax guide: how to write any math problem step by step.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%230a0d12'/%3E%3Ctext x='16' y='23' font-family='serif' font-size='22' font-weight='700' fill='%23ffffff' text-anchor='middle'%3E∎%3C/text%3E%3C/svg%3E">
+
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+
+<header>
+  <div class="wrap">
+    <a class="logo" href="/" style="text-decoration:none;">
+      <span class="sigil">∎</span>
+      <span class="logo-text">THE SOLVER</span>
+    </a>
+    <div class="tagline">Guide · Syntax Manual</div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero" style="padding: 50px 0 30px;">
+    <div class="hero-sigil">⧫</div>
+    <h1>How to use THE SOLVER</h1>
+    <p>Write any math problem — the engine understands plain text. Here's the full syntax guide.</p>
+    <div class="hero-divider">
+      <span></span><span class="dot">◆</span><span></span>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <span class="card-num">I</span>
+      <span class="card-title">Getting Started</span>
+    </div>
+    <div class="about-body">
+      <p>You don't need special syntax. Just type your problem the way you'd say it, and the engine figures out the rest.</p>
+      <ul class="about-list">
+        <li>Use <strong>plain text</strong> — no LaTeX required from you.</li>
+        <li>Use <strong>^</strong> for powers: <code>x^2</code> means x².</li>
+        <li>Use <strong>*</strong> or nothing for multiplication: <code>2x</code> or <code>2*x</code>.</li>
+        <li>Use the <strong>123</strong> tab if you don't want to type symbols.</li>
+        <li>Use the <strong>Enter</strong> key or press the big white button.</li>
+      </ul>
+      <div class="guide-tip">
+        <strong>Tip:</strong> Type in English or Persian. Math symbols are the same.
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <span class="card-num">1</span>
+      <span class="card-title">Basic Arithmetic</span>
+    </div>
+    <div class="about-body">
+      <p>Solved instantly by the internal calculator — no AI needed.</p>
+      <div class="guide-example">
+        <div class="guide-input">2 + 3 * 4</div>
+        <div class="guide-arrow">→</div>
+        <div class="guide-result">14</div>
+      </div>
+      <div class="guide-example">
+        <div class="guide-input">(15 / 3) ^ 2</div>
+        <div class="guide-arrow">→</div>
+        <div class="guide-result">25</div>
+      </div>
+      <div class="guide-example">
+        <div class="guide-input">sqrt(144) + abs(-5)</div>
+        <div class="guide-arrow">→</div>
+        <div class="guide-result">17</div>
+      </div>
+      <div class="guide-example">
+        <div class="guide-input">25% of 80</div>
+        <div class="guide-arrow">→</div>
+        <div class="guide-result">20</div>
+      </div>
+      <h2 class="about-h2">Available Functions</h2>
+      <div class="guide-grid">
+        <div class="guide-cell"><code>sqrt(x)</code></div><div class="guide-cell-desc">square root</div>
+        <div class="guide-cell"><code>abs(x)</code></div><div class="guide-cell-desc">absolute value</div>
+        <div class="guide-cell"><code>sin(x)</code></div><div class="guide-cell-desc">sine (radians)</div>
+        <div class="guide-cell"><code>cos(x)</code></div><div class="guide-cell-desc">cosine</div>
+        <div class="guide-cell"><code>tan(x)</code></div><div class="guide-cell-desc">tangent</div>
+        <div class="guide-cell"><code>log(x)</code></div><div class="guide-cell-desc">natural log</div>
+        <div class="guide-cell"><code>log10(x)</code></div><div class="guide-cell-desc">base-10 log</div>
+        <div class="guide-cell"><code>exp(x)</code></div><div class="guide-cell-desc">e^x</div>
+        <div class="guide-cell"><code>pi</code></div><div class="guide-cell-desc">π ≈ 3.14159</div>
+        <div class="guide-cell"><code>e</code></div><div class="guide-cell-desc">e ≈ 2.71828</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <span class="card-num">2</span>
+      <span class="card-title">Equations</span>
+    </div>
+    <div class="about-body">
+      <p>Write the equation as it is. The engine finds the value of the unknown.</p>
+      <h2 class="about-h2">Linear Equations</h2>
+      <div class="guide-example">
+        <div class="guide-input">2x + 5 = 15</div>
+        <div class="guide-arrow">→</div>
+        <div class="guide-result">x = 5</div>
+      </div>
+      <h2 class="about-h2">Quadratic Equations</h2>
+      <div class="guide-example">
+        <div class="guide-input">x^2 - 5x + 6 = 0</div>
+        <div class="guide-arrow">→</div>
+        <div class="guide-result">x = 2 or x = 3</div>
+      </div>
+      <h2 class="about-h2">Systems of Equations</h2>
+      <div class="guide-example">
+        <div class="guide-input">2x + y = 10 and x - y = 2</div>
+        <div class="guide-arrow">→</div>
+        <div class="guide-result">x = 4, y = 2</div>
+      </div>
+      <h2 class="about-h2">Cubic &amp; Higher</h2>
+      <div class="guide-example">
+        <div class="guide-input">x^3 - 6x^2 + 11x - 6 = 0</div>
+        <div class="guide-arrow">→</div>
+        <div class="guide-result">x = 1, 2, or 3</div>
+      </div>
+      <h2 class="about-h2">Inequalities</h2>
+      <div class="guide-example">
+        <div class="guide-input">2x + 3 &lt; 11</div>
+        <div class="guide-arrow">→</div>
+        <div class="guide-result">x &lt; 4</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <span class="card-num">3</span>
+      <span class="card-title">Derivatives</span>
+    </div>
+    <div class="about-body">
+      <p>Ask for a derivative in plain English or with symbolic notation.</p>
+      <div class="guide-example">
+        <div class="guide-input">derivative of x^3</div>
+        <div class="guide-arrow">→</div>
+        <div class="guide-result">3x²</div>
+      </div>
+      <div class="guide-example">
+        <div class="guide-input">d/dx (sin(x) * x^2)</div>
+        <div class="guide-arrow">→</div>
+        <div class="guide-result">2x·sin(x) + x²·cos(x)</div>
+      </div>
+      <div class="guide-example">
+        <div class="guide-input">f'(x) where f(x) = ln(x)</div>
+        <div class="guide-arrow">→</div>
+        <div class="guide-result">1/x</div>
+      </div>
+      <div class="guide-tip">
+        <strong>Tip:</strong> You can also write <code>diff(x^3)</code>, <code>∂/∂x (x^2 y)</code>, or <code>مشتق x^2</code>.
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <span class="card-num">4</span>
+      <span class="card-title">Integrals</span>
+    </div>
+    <div class="about-body">
+      <p>Write <code>integral</code> or <code>∫</code>. For definite integrals, add the bounds.</p>
+      <h2 class="about-h2">Indefinite</h2>
+      <div class="guide-example">
+        <div class="guide-input">integral of x^2</div>
+        <div class="guide-arrow">→</div>
+        <div class="guide-result">x³/3 + C</div>
+      </div>
+      <div class="guide-example">
+        <div class="guide-input">∫ sin(x) dx</div>
+        <div class="guide-arrow">→</div>
+        <div class="guide-result">-cos(x) + C</div>
+      </div>
+      <h2 class="about-h2">Definite</h2>
+      <div class="guide-example">
+        <div class="guide-input">integral of x^2 from 0 to 1</div>
+        <div class="guide-arrow">→</div>
+        <div class="guide-result">1/3</div>
+      </div>
+      <div class="guide-example">
+        <div class="guide-input">∫₀^π sin(x) dx</div>
+        <div class="guide-arrow">→</div>
+        <div class="guide-result">2</div>
+      </div>
+      <div class="guide-tip">
+        <strong>Tip:</strong> Use the <strong>Calculus</strong> tab in the keyboard for the ∫ symbol.
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <span class="card-num">5</span>
+      <span class="card-title">Limits</span>
+    </div>
+    <div class="about-body">
+      <div class="guide-example">
+        <div class="guide-input">limit of (sin(x)/x) as x → 0</div>
+        <div class="guide-arrow">→</div>
+        <div class="guide-result">1</div>
+      </div>
+      <div class="guide-example">
+        <div class="guide-input">lim (1 + 1/n)^n as n → ∞</div>
+        <div class="guide-arrow">→</div>
+        <div class="guide-result">e</div>
+      </div>
+      <div class="guide-example">
+        <div class="guide-input">lim x → 2 (x^2 - 4)/(x - 2)</div>
+        <div class="guide-arrow">→</div>
+        <div class="guide-result">4</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <span class="card-num">6</span>
+      <span class="card-title">Differential Equations</span>
+    </div>
+    <div class="about-body">
+      <p>Write the equation in plain form. The engine will find the general solution.</p>
+      <div class="guide-example">
+        <div class="guide-input">dy/dx = 2x</div>
+        <div class="guide-arrow">→</div>
+        <div class="guide-result">y = x² + C</div>
+      </div>
+      <div class="guide-example">
+        <div class="guide-input">y' + y = 0</div>
+        <div class="guide-arrow">→</div>
+        <div class="guide-result">y = C·e⁻ˣ</div>
+      </div>
+      <div class="guide-example">
+        <div class="guide-input">y'' - 3y' + 2y = 0</div>
+        <div class="guide-arrow">→</div>
+        <div class="guide-result">y = C₁·eˣ + C₂·e²ˣ</div>
+      </div>
+      <div class="guide-tip">
+        <strong>Tip:</strong> For second derivatives, use <code>y''</code> or <code>d^2y/dx^2</code>.
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <span class="card-num">7</span>
+      <span class="card-title">Trigonometry</span>
+    </div>
+    <div class="about-body">
+      <div class="guide-example">
+        <div class="guide-input">sin(pi/2)</div>
+        <div class="guide-arrow">→</div>
+        <div class="guide-result">1</div>
+      </div>
+      <div class="guide-example">
+        <div class="guide-input">solve sin(x) = 1/2 for x in [0, 2π]</div>
+        <div class="guide-arrow">→</div>
+        <div class="guide-result">x = π/6 or 5π/6</div>
+      </div>
+      <div class="guide-example">
+        <div class="guide-input">simplify sin^2(x) + cos^2(x)</div>
+        <div class="guide-arrow">→</div>
+        <div class="guide-result">1</div>
+      </div>
+      <div class="guide-tip">
+        <strong>Tip:</strong> Angles are in radians by default.
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <span class="card-num">8</span>
+      <span class="card-title">Logarithms &amp; Exponentials</span>
+    </div>
+    <div class="about-body">
+      <div class="guide-example">
+        <div class="guide-input">log(100)</div>
+        <div class="guide-arrow">→</div>
+        <div class="guide-result">ln form or log₁₀ form</div>
+      </div>
+      <div class="guide-example">
+        <div class="guide-input">solve 2^x = 8</div>
+        <div class="guide-arrow">→</div>
+        <div class="guide-result">x = 3</div>
+      </div>
+      <div class="guide-example">
+        <div class="guide-input">ln(e^5)</div>
+        <div class="guide-arrow">→</div>
+        <div class="guide-result">5</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <span class="card-num">9</span>
+      <span class="card-title">Matrices &amp; Determinants</span>
+    </div>
+    <div class="about-body">
+      <div class="guide-example">
+        <div class="guide-input">determinant of [[1, 2], [3, 4]]</div>
+        <div class="guide-arrow">→</div>
+        <div class="guide-result">-2</div>
+      </div>
+      <div class="guide-example">
+        <div class="guide-input">inverse of [[2, 0], [0, 3]]</div>
+        <div class="guide-arrow">→</div>
+        <div class="guide-result">[[1/2, 0], [0, 1/3]]</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <span class="card-num">10</span>
+      <span class="card-title">Chat Mode</span>
+    </div>
+    <div class="about-body">
+      <p>Switch to <strong>CHAT</strong> mode if you want to continue the conversation. The engine remembers your previous messages.</p>
+      <div class="guide-example">
+        <div class="guide-input">You: solve 2x + 5 = 15</div>
+        <div class="guide-arrow">→</div>
+        <div class="guide-result">x = 5</div>
+      </div>
+      <div class="guide-example">
+        <div class="guide-input">You: now do it for 3x + 7 = 22</div>
+        <div class="guide-arrow">→</div>
+        <div class="guide-result">x = 5</div>
+      </div>
+      <div class="guide-tip">
+        <strong>Tip:</strong> Press the ✕ button next to the mode tabs to reset the chat.
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <span class="card-num">11</span>
+      <span class="card-title">Tips &amp; Tricks</span>
+    </div>
+    <div class="about-body">
+      <ul class="about-list">
+        <li><strong>Use the keyboard</strong> if you don't want to type symbols. The <strong>123</strong> tab is a full numeric pad.</li>
+        <li><strong>Instant answers</strong> for arithmetic come from the calculator — no AI wasted.</li>
+        <li><strong>Repeat questions</strong> are cached for 24 hours — they return instantly.</li>
+        <li><strong>Try different engines</strong> — some are better at calculus, others at logic.</li>
+        <li><strong>Share answers</strong> with the ↗ button — it copies a link with the question inside.</li>
+        <li><strong>Graph functions</strong> — write <code>y = x^2</code> and the graph appears automatically.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div style="text-align:center; margin: 40px 0 60px;">
+    <a href="/" class="btn">← Start Solving</a>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-line"></div>
+    <p>∎ Made by JMFakhri &nbsp;·&nbsp;
+      <a href="/" style="color:inherit; text-decoration:underline;">Home</a> &nbsp;·&nbsp;
+      <a href="/about" style="color:inherit; text-decoration:underline;">About</a>
+    </p>
+  </div>
+</footer>
+
+<script>
+  window.addEventListener('DOMContentLoaded', function() {
+    if (window.renderMathInElement) {
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '\\(', right: '\\)', display: false},
+          {left: '$', right: '$', display: false}
+        ],
+        throwOnError: false,
+        trust: false
+      });
+    }
+  });
+</script>
+
+</body>
+</html>
