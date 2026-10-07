@@ -1,88 +1,263 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg: #f5f7fb;
-  --card: #ffffff;
-  --text: #1a1f36;
-  --text-light: #6b7280;
-  --primary: #6366f1;
-  --primary-dark: #4f46e5;
-  --border: #e5e7eb;
-  --error: #ef4444;
+  --bg: #0a0c10;
+  --bg-2: #0e1117;
+  --card: #11141c;
+  --card-2: #161a24;
+  --text: #d4d8e1;
+  --text-dim: #6f7684;
+  --text-faint: #444a58;
+  --accent: #8b95a8;
+  --accent-bright: #c5cdd9;
+  --line: #1e2330;
+  --line-bright: #2c333f;
+  --glow: rgba(139, 149, 168, 0.15);
 }
+
+html, body { height: 100%; }
 
 body {
-  font-family: 'Vazirmatn', Tahoma, sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   background: var(--bg);
   color: var(--text);
-  line-height: 1.9;
+  line-height: 1.7;
   min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
 }
 
-.wrap { max-width: 820px; margin: 0 auto; padding: 0 20px; }
+/* ============ پس‌زمینه‌ی مرموز ============ */
+.bg-grid {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(139,149,168,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139,149,168,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: radial-gradient(ellipse at center, black 20%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 20%, transparent 80%);
+}
 
+.bg-glow {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 20% 10%, rgba(60, 80, 120, 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 80% 80%, rgba(40, 50, 80, 0.10) 0%, transparent 50%);
+  animation: drift 20s ease-in-out infinite alternate;
+}
+@keyframes drift {
+  from { transform: translate(0, 0); }
+  to { transform: translate(-20px, -20px); }
+}
+
+.wrap { max-width: 760px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+/* ============ هدر ============ */
 header {
-  background: var(--card);
-  border-bottom: 1px solid var(--border);
-  padding: 16px 0;
-  position: sticky;
-  top: 0;
-  z-index: 10;
+  padding: 28px 0 20px;
+  border-bottom: 1px solid var(--line);
+  position: relative;
+  z-index: 1;
 }
-header .wrap { display: flex; justify-content: space-between; align-items: center; }
-.logo { font-weight: 800; font-size: 1.2rem; color: var(--primary); }
-.lang-hint { font-size: 0.85rem; color: var(--text-light); }
+header .wrap {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.sigil {
+  color: var(--accent-bright);
+  font-size: 1.4rem;
+  text-shadow: 0 0 12px var(--glow);
+}
+.logo-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 700;
+  font-size: 1.35rem;
+  letter-spacing: 4px;
+  color: var(--accent-bright);
+}
+.tagline {
+  font-size: 0.72rem;
+  letter-spacing: 2px;
+  color: var(--text-faint);
+  text-transform: uppercase;
+}
 
-.hero { padding: 50px 0 30px; text-align: center; }
-.hero h1 { font-size: clamp(1.6rem, 4vw, 2.2rem); font-weight: 800; margin-bottom: 12px; }
-.hero p { color: var(--text-light); font-size: 1.05rem; }
+/* ============ هیرو ============ */
+.hero {
+  padding: 70px 0 40px;
+  text-align: center;
+  position: relative;
+}
+.hero-sigil {
+  font-size: 1.8rem;
+  color: var(--accent);
+  opacity: 0.6;
+  margin-bottom: 20px;
+  display: inline-block;
+  animation: pulse 4s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.9; transform: scale(1.08); }
+}
+.hero h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  font-size: clamp(1.8rem, 4.5vw, 2.6rem);
+  letter-spacing: 0.5px;
+  color: var(--accent-bright);
+  margin-bottom: 14px;
+  line-height: 1.3;
+}
+.hero p {
+  color: var(--text-dim);
+  font-size: 1rem;
+  max-width: 480px;
+  margin: 0 auto 30px;
+}
+.hero-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  max-width: 260px;
+  margin: 0 auto;
+}
+.hero-divider span:not(.dot) {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--line-bright), transparent);
+}
+.hero-divider .dot {
+  color: var(--accent);
+  font-size: 0.7rem;
+  letter-spacing: 4px;
+}
 
+/* ============ کارت ============ */
 .card {
   background: var(--card);
-  border-radius: 20px;
-  padding: 30px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-  border: 1px solid var(--border);
-  margin-bottom: 30px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 32px;
+  margin-bottom: 32px;
+  position: relative;
+  box-shadow:
+    0 0 0 1px rgba(139, 149, 168, 0.04),
+    0 30px 60px -30px rgba(0, 0, 0, 0.8);
+}
+.card::before,
+.card::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: var(--line-bright);
+  border-style: solid;
+}
+.card::before {
+  top: -1px;
+  left: -1px;
+  border-width: 1px 0 0 1px;
+}
+.card::after {
+  bottom: -1px;
+  right: -1px;
+  border-width: 0 1px 1px 0;
 }
 
-.field { margin-bottom: 22px; }
+.card-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 20px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--line);
+}
+.card-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--accent-bright);
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--line-bright);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 0;
+}
+.card-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: var(--accent-bright);
+  text-transform: uppercase;
+  flex: 1;
+}
+
+/* ============ فرم ============ */
+.field { margin-bottom: 24px; }
 .field label {
   display: block;
-  font-weight: 600;
+  font-size: 0.78rem;
+  letter-spacing: 1.5px;
+  color: var(--text-dim);
+  text-transform: uppercase;
   margin-bottom: 10px;
-  font-size: 0.95rem;
+  font-weight: 500;
 }
 
 textarea {
   width: 100%;
-  min-height: 100px;
-  padding: 14px 16px;
-  border: 2px solid var(--border);
-  border-radius: 14px;
-  font-family: 'Vazirmatn', Tahoma, sans-serif;
-  font-size: 1rem;
+  min-height: 110px;
+  padding: 16px 18px;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.95rem;
+  color: var(--accent-bright);
   resize: vertical;
   outline: none;
-  transition: border-color 0.2s;
-  background: var(--bg);
-  color: var(--text);
+  transition: border-color 0.25s, box-shadow 0.25s;
+  letter-spacing: 0.3px;
 }
-textarea:focus { border-color: var(--primary); background: #fff; }
+textarea::placeholder {
+  color: var(--text-faint);
+  font-family: 'JetBrains Mono', monospace;
+}
+textarea:focus {
+  border-color: var(--line-bright);
+  box-shadow: 0 0 0 3px rgba(139, 149, 168, 0.08);
+}
 
-/* ============ کیبورد ریاضی ============ */
+/* ============ کیبورد ============ */
 .math-kb {
   margin-top: 12px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 10px;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 12px;
 }
 
 .kb-tabs {
   display: flex;
   gap: 6px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   overflow-x: auto;
   scrollbar-width: none;
   padding-bottom: 2px;
@@ -92,21 +267,26 @@ textarea:focus { border-color: var(--primary); background: #fff; }
 .kb-tab {
   flex-shrink: 0;
   padding: 6px 14px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  font-family: 'Vazirmatn', Tahoma, sans-serif;
-  font-size: 0.8rem;
-  color: var(--text-light);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 1.2px;
+  color: var(--text-dim);
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
+  text-transform: uppercase;
 }
-.kb-tab:hover { background: #eef2ff; color: var(--primary); }
+.kb-tab:hover {
+  color: var(--accent-bright);
+  border-color: var(--line-bright);
+}
 .kb-tab.active {
-  background: var(--primary);
-  color: #fff;
-  border-color: var(--primary);
+  background: var(--card-2);
+  color: var(--accent-bright);
+  border-color: var(--line-bright);
 }
 
 .kb-panel {
@@ -118,13 +298,13 @@ textarea:focus { border-color: var(--primary); background: #fff; }
 
 .kb-panel button {
   width: 100%;
-  height: 44px;
+  height: 42px;
   padding: 0;
   background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   color: var(--text);
   cursor: pointer;
   transition: all 0.15s;
@@ -133,71 +313,107 @@ textarea:focus { border-color: var(--primary); background: #fff; }
   justify-content: center;
 }
 .kb-panel button:hover {
-  background: var(--primary);
-  color: #fff;
-  border-color: var(--primary);
-  transform: translateY(-2px);
+  background: var(--card-2);
+  color: var(--accent-bright);
+  border-color: var(--line-bright);
+  transform: translateY(-1px);
 }
-.kb-panel button:active { transform: scale(0.94); }
+.kb-panel button:active { transform: scale(0.95); }
 
 @media (max-width: 600px) {
   .kb-panel { grid-template-columns: repeat(4, 1fr); }
-  .kb-panel button { height: 40px; font-size: 0.85rem; }
-  .kb-tab { font-size: 0.75rem; padding: 5px 10px; }
+  .kb-panel button { height: 38px; font-size: 0.8rem; }
 }
 
 /* ============ آپلود ============ */
 .upload-area {
-  border: 2px dashed var(--border);
-  border-radius: 14px;
-  padding: 30px 20px;
+  border: 1px dashed var(--line-bright);
+  border-radius: 4px;
+  padding: 34px 20px;
   text-align: center;
   cursor: pointer;
-  transition: border-color 0.2s, background 0.2s;
-  background: var(--bg);
+  transition: border-color 0.25s, background 0.25s;
+  background: var(--bg-2);
 }
-.upload-area:hover { border-color: var(--primary); background: #f0f2ff; }
-.upload-text { display: flex; flex-direction: column; gap: 6px; color: var(--text-light); }
-.upload-icon { font-size: 32px; }
-.upload-hint { font-size: 0.8rem; opacity: 0.7; }
+.upload-area:hover {
+  border-color: var(--accent);
+  background: var(--card);
+}
+.upload-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--text-dim);
+}
+.upload-icon {
+  font-size: 26px;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+.upload-main {
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+}
+.upload-hint {
+  font-size: 0.7rem;
+  color: var(--text-faint);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
 
 .preview { display: none; margin-top: 15px; }
 .preview img {
   max-width: 100%;
   max-height: 260px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
+  border-radius: 3px;
+  border: 1px solid var(--line-bright);
 }
 
-/* ============ دکمه حل ============ */
+/* ============ دکمه ============ */
 .solve-btn {
   width: 100%;
-  height: 56px;
-  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-  color: #fff;
-  border: none;
-  border-radius: 14px;
-  font-family: 'Vazirmatn', Tahoma, sans-serif;
-  font-size: 1.05rem;
-  font-weight: 700;
+  height: 54px;
+  background: var(--card-2);
+  color: var(--accent-bright);
+  border: 1px solid var(--line-bright);
+  border-radius: 4px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 4px;
+  text-transform: uppercase;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: all 0.25s;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
+  position: relative;
+  overflow: hidden;
+}
+.solve-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(197, 205, 217, 0.08), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s;
+}
+.solve-btn:hover:not(:disabled)::before {
+  transform: translateX(100%);
 }
 .solve-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 25px rgba(99, 102, 241, 0.35);
+  border-color: var(--accent);
+  color: #fff;
+  box-shadow: 0 0 30px -5px var(--glow);
 }
-.solve-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+.solve-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .btn-loader {
-  width: 20px;
-  height: 20px;
-  border: 3px solid rgba(255,255,255,0.3);
-  border-top-color: #fff;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--line-bright);
+  border-top-color: var(--accent-bright);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -206,67 +422,109 @@ textarea:focus { border-color: var(--primary); background: #fff; }
 /* ============ نتیجه ============ */
 .result {
   background: var(--card);
-  border-radius: 20px;
-  padding: 30px;
-  border: 1px solid var(--border);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-  margin-bottom: 30px;
-  animation: fadeIn 0.4s ease;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 32px;
+  margin-bottom: 32px;
+  position: relative;
+  animation: fadeIn 0.5s ease;
+  box-shadow:
+    0 0 0 1px rgba(139, 149, 168, 0.06),
+    0 30px 60px -30px rgba(0, 0, 0, 0.8);
 }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.result::before,
+.result::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: var(--accent);
+  border-style: solid;
+}
+.result::before {
+  top: -1px;
+  left: -1px;
+  border-width: 1px 0 0 1px;
+}
+.result::after {
+  bottom: -1px;
+  right: -1px;
+  border-width: 0 1px 1px 0;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
 
-.result-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-bottom: 15px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 20px;
-}
-.result-head h2 { font-size: 1.2rem; color: var(--primary); }
 .copy-btn {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 8px 12px;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 6px 12px;
   cursor: pointer;
-  font-size: 1rem;
-  transition: background 0.2s;
+  font-size: 0.95rem;
+  color: var(--text-dim);
+  transition: all 0.2s;
 }
-.copy-btn:hover { background: #eef2ff; }
+.copy-btn:hover {
+  color: var(--accent-bright);
+  border-color: var(--line-bright);
+}
 
 .result-body {
-  font-size: 1rem;
-  line-height: 2.4;
-  word-wrap: break-word;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.95rem;
+  line-height: 2.6;
+  color: var(--text);
   text-align: center;
+  word-wrap: break-word;
+  padding-top: 4px;
+}
+.result-body .katex {
+  color: var(--accent-bright);
 }
 .result-body .katex-display {
-  margin: 12px 0;
+  margin: 18px 0;
   overflow-x: auto;
   overflow-y: hidden;
+}
+.result-body .katex-display > .katex {
+  text-shadow: 0 0 20px rgba(197, 205, 217, 0.08);
 }
 
 /* ============ خطا ============ */
 .error {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: var(--error);
+  background: #17090c;
+  border: 1px solid #3a1418;
+  color: #d88a8a;
   padding: 16px 20px;
-  border-radius: 14px;
-  margin-bottom: 30px;
-  font-size: 0.9rem;
+  border-radius: 4px;
+  margin-bottom: 32px;
+  font-size: 0.88rem;
+  font-family: 'JetBrains Mono', monospace;
 }
 
+/* ============ فوتر ============ */
 footer {
+  padding: 50px 0 40px;
   text-align: center;
-  padding: 40px 20px;
-  color: var(--text-light);
-  font-size: 0.9rem;
+  color: var(--text-faint);
+  font-size: 0.78rem;
+  letter-spacing: 1.2px;
+  position: relative;
+  z-index: 1;
+}
+.foot-line {
+  width: 60px;
+  height: 1px;
+  background: var(--line-bright);
+  margin: 0 auto 20px;
 }
 
 @media (max-width: 600px) {
-  .card { padding: 22px; border-radius: 16px; }
-  .hero { padding: 30px 0 20px; }
-  .result { padding: 22px; }
+  .card, .result { padding: 22px 18px; }
+  .hero { padding: 50px 0 30px; }
+  .logo-text { font-size: 1.05rem; letter-spacing: 3px; }
+  .tagline { display: none; }
+  .card-title { font-size: 1.05rem; letter-spacing: 1.5px; }
 }
