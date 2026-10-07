@@ -1,18 +1,19 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg: #0a0c10;
-  --bg-2: #0e1117;
-  --card: #11141c;
-  --card-2: #161a24;
-  --text: #d4d8e1;
-  --text-dim: #6f7684;
-  --text-faint: #444a58;
-  --accent: #8b95a8;
-  --accent-bright: #c5cdd9;
-  --line: #1e2330;
-  --line-bright: #2c333f;
-  --glow: rgba(139, 149, 168, 0.15);
+  --bg: #050608;
+  --bg-2: #0a0d12;
+  --card: #0f131a;
+  --card-2: #161c26;
+  --text: #e8ecf2;
+  --text-dim: #9ba3b2;
+  --text-faint: #5f6774;
+  --accent: #6f7d92;
+  --accent-bright: #ffffff;
+  --line: #1c2330;
+  --line-bright: #2e3848;
+  --glow: rgba(255, 255, 255, 0.15);
+  --active-glow: rgba(120, 170, 255, 0.15);
 }
 
 html, body { height: 100%; }
@@ -27,18 +28,17 @@ body {
   position: relative;
 }
 
-/* ============ پس‌زمینه‌ی مرموز ============ */
 .bg-grid {
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
   background-image:
-    linear-gradient(rgba(139,149,168,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(139,149,168,0.03) 1px, transparent 1px);
-  background-size: 40px 40px;
-  mask-image: radial-gradient(ellipse at center, black 20%, transparent 80%);
-  -webkit-mask-image: radial-gradient(ellipse at center, black 20%, transparent 80%);
+    linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse at center, black 15%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 15%, transparent 75%);
 }
 
 .bg-glow {
@@ -47,20 +47,20 @@ body {
   z-index: 0;
   pointer-events: none;
   background:
-    radial-gradient(circle at 20% 10%, rgba(60, 80, 120, 0.12) 0%, transparent 45%),
-    radial-gradient(circle at 80% 80%, rgba(40, 50, 80, 0.10) 0%, transparent 50%);
+    radial-gradient(circle at 15% 10%, rgba(90, 120, 180, 0.18) 0%, transparent 45%),
+    radial-gradient(circle at 85% 85%, rgba(60, 90, 150, 0.14) 0%, transparent 50%);
   animation: drift 20s ease-in-out infinite alternate;
 }
 @keyframes drift {
   from { transform: translate(0, 0); }
-  to { transform: translate(-20px, -20px); }
+  to { transform: translate(-25px, -25px); }
 }
 
-.wrap { max-width: 760px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+.wrap { max-width: 780px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
 
 /* ============ هدر ============ */
 header {
-  padding: 28px 0 20px;
+  padding: 30px 0 22px;
   border-bottom: 1px solid var(--line);
   position: relative;
   z-index: 1;
@@ -78,18 +78,19 @@ header .wrap {
 .sigil {
   color: var(--accent-bright);
   font-size: 1.4rem;
-  text-shadow: 0 0 12px var(--glow);
+  text-shadow: 0 0 14px rgba(255,255,255,0.4);
 }
 .logo-text {
   font-family: 'Cormorant Garamond', serif;
   font-weight: 700;
-  font-size: 1.35rem;
-  letter-spacing: 4px;
-  color: var(--accent-bright);
+  font-size: 1.4rem;
+  letter-spacing: 5px;
+  color: #ffffff;
+  text-shadow: 0 0 20px rgba(255,255,255,0.15);
 }
 .tagline {
-  font-size: 0.72rem;
-  letter-spacing: 2px;
+  font-size: 0.7rem;
+  letter-spacing: 2.5px;
   color: var(--text-faint);
   text-transform: uppercase;
 }
@@ -101,25 +102,27 @@ header .wrap {
   position: relative;
 }
 .hero-sigil {
-  font-size: 1.8rem;
-  color: var(--accent);
-  opacity: 0.6;
+  font-size: 1.9rem;
+  color: #ffffff;
+  opacity: 0.7;
   margin-bottom: 20px;
   display: inline-block;
   animation: pulse 4s ease-in-out infinite;
+  text-shadow: 0 0 20px rgba(255,255,255,0.3);
 }
 @keyframes pulse {
   0%, 100% { opacity: 0.4; transform: scale(1); }
-  50% { opacity: 0.9; transform: scale(1.08); }
+  50% { opacity: 1; transform: scale(1.1); }
 }
 .hero h1 {
   font-family: 'Cormorant Garamond', serif;
   font-weight: 600;
-  font-size: clamp(1.8rem, 4.5vw, 2.6rem);
+  font-size: clamp(1.9rem, 4.5vw, 2.7rem);
   letter-spacing: 0.5px;
-  color: var(--accent-bright);
+  color: #ffffff;
   margin-bottom: 14px;
   line-height: 1.3;
+  text-shadow: 0 0 30px rgba(255,255,255,0.1);
 }
 .hero p {
   color: var(--text-dim);
@@ -141,7 +144,7 @@ header .wrap {
   background: linear-gradient(90deg, transparent, var(--line-bright), transparent);
 }
 .hero-divider .dot {
-  color: var(--accent);
+  color: #ffffff;
   font-size: 0.7rem;
   letter-spacing: 4px;
 }
@@ -149,14 +152,14 @@ header .wrap {
 /* ============ کارت ============ */
 .card {
   background: var(--card);
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-bright);
   border-radius: 4px;
   padding: 32px;
-  margin-bottom: 32px;
+  margin-bottom: 28px;
   position: relative;
   box-shadow:
-    0 0 0 1px rgba(139, 149, 168, 0.04),
-    0 30px 60px -30px rgba(0, 0, 0, 0.8);
+    0 0 0 1px rgba(255, 255, 255, 0.02),
+    0 30px 70px -30px rgba(0, 0, 0, 0.95);
 }
 .card::before,
 .card::after {
@@ -164,7 +167,7 @@ header .wrap {
   position: absolute;
   width: 14px;
   height: 14px;
-  border-color: var(--line-bright);
+  border-color: var(--accent);
   border-style: solid;
 }
 .card::before {
@@ -188,25 +191,85 @@ header .wrap {
 }
 .card-num {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   font-weight: 700;
-  color: var(--accent-bright);
-  width: 28px;
-  height: 28px;
+  color: #ffffff;
+  width: 30px;
+  height: 30px;
   border: 1px solid var(--line-bright);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  letter-spacing: 0;
 }
 .card-title {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 1.25rem;
+  font-size: 1.3rem;
   font-weight: 600;
-  letter-spacing: 2px;
-  color: var(--accent-bright);
+  letter-spacing: 2.5px;
+  color: #ffffff;
   text-transform: uppercase;
   flex: 1;
+}
+
+/* ============ موتورها ============ */
+.engines {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+@media (max-width: 700px) {
+  .engines { grid-template-columns: repeat(2, 1fr); }
+}
+
+.engine-btn {
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 16px 10px;
+  cursor: pointer;
+  transition: all 0.25s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Inter', sans-serif;
+  color: var(--text);
+  text-align: center;
+}
+.engine-btn:hover:not(:disabled) {
+  background: var(--card-2);
+  border-color: var(--line-bright);
+  transform: translateY(-2px);
+}
+.engine-btn.active {
+  background: var(--card-2);
+  border-color: #ffffff;
+  box-shadow: 0 0 25px -5px var(--active-glow), inset 0 0 20px rgba(255,255,255,0.03);
+}
+.engine-btn.active .eng-name {
+  color: #ffffff;
+  text-shadow: 0 0 15px rgba(255,255,255,0.3);
+}
+.engine-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.eng-icon {
+  font-size: 1.6rem;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.eng-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: var(--text);
+}
+.eng-sub {
+  font-size: 0.68rem;
+  color: var(--text-faint);
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
 }
 
 /* ============ فرم ============ */
@@ -226,11 +289,11 @@ textarea {
   min-height: 110px;
   padding: 16px 18px;
   background: var(--bg-2);
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-bright);
   border-radius: 4px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.95rem;
-  color: var(--accent-bright);
+  color: #ffffff;
   resize: vertical;
   outline: none;
   transition: border-color 0.25s, box-shadow 0.25s;
@@ -241,8 +304,8 @@ textarea::placeholder {
   font-family: 'JetBrains Mono', monospace;
 }
 textarea:focus {
-  border-color: var(--line-bright);
-  box-shadow: 0 0 0 3px rgba(139, 149, 168, 0.08);
+  border-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.06);
 }
 
 /* ============ کیبورد ============ */
@@ -280,13 +343,13 @@ textarea:focus {
   text-transform: uppercase;
 }
 .kb-tab:hover {
-  color: var(--accent-bright);
+  color: #ffffff;
   border-color: var(--line-bright);
 }
 .kb-tab.active {
   background: var(--card-2);
-  color: var(--accent-bright);
-  border-color: var(--line-bright);
+  color: #ffffff;
+  border-color: #ffffff;
 }
 
 .kb-panel {
@@ -305,7 +368,7 @@ textarea:focus {
   border-radius: 3px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.9rem;
-  color: var(--text);
+  color: #ffffff;
   cursor: pointer;
   transition: all 0.15s;
   display: flex;
@@ -314,9 +377,9 @@ textarea:focus {
 }
 .kb-panel button:hover {
   background: var(--card-2);
-  color: var(--accent-bright);
-  border-color: var(--line-bright);
+  border-color: #ffffff;
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
 }
 .kb-panel button:active { transform: scale(0.95); }
 
@@ -336,7 +399,7 @@ textarea:focus {
   background: var(--bg-2);
 }
 .upload-area:hover {
-  border-color: var(--accent);
+  border-color: #ffffff;
   background: var(--card);
 }
 .upload-text {
@@ -347,7 +410,7 @@ textarea:focus {
 }
 .upload-icon {
   font-size: 26px;
-  color: var(--accent);
+  color: #ffffff;
   margin-bottom: 4px;
 }
 .upload-main {
@@ -372,15 +435,15 @@ textarea:focus {
 /* ============ دکمه ============ */
 .solve-btn {
   width: 100%;
-  height: 54px;
-  background: var(--card-2);
-  color: var(--accent-bright);
-  border: 1px solid var(--line-bright);
+  height: 56px;
+  background: #ffffff;
+  color: #050608;
+  border: 1px solid #ffffff;
   border-radius: 4px;
   font-family: 'Inter', sans-serif;
-  font-size: 0.82rem;
-  font-weight: 500;
-  letter-spacing: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 5px;
   text-transform: uppercase;
   cursor: pointer;
   transition: all 0.25s;
@@ -391,29 +454,17 @@ textarea:focus {
   position: relative;
   overflow: hidden;
 }
-.solve-btn::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, transparent, rgba(197, 205, 217, 0.08), transparent);
-  transform: translateX(-100%);
-  transition: transform 0.6s;
-}
-.solve-btn:hover:not(:disabled)::before {
-  transform: translateX(100%);
-}
 .solve-btn:hover:not(:disabled) {
-  border-color: var(--accent);
-  color: #fff;
-  box-shadow: 0 0 30px -5px var(--glow);
+  background: #e8ecf2;
+  box-shadow: 0 0 40px -5px rgba(255, 255, 255, 0.4);
 }
 .solve-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .btn-loader {
   width: 18px;
   height: 18px;
-  border: 2px solid var(--line-bright);
-  border-top-color: var(--accent-bright);
+  border: 2px solid rgba(5, 6, 8, 0.2);
+  border-top-color: #050608;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -422,15 +473,15 @@ textarea:focus {
 /* ============ نتیجه ============ */
 .result {
   background: var(--card);
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-bright);
   border-radius: 4px;
   padding: 32px;
-  margin-bottom: 32px;
+  margin-bottom: 28px;
   position: relative;
   animation: fadeIn 0.5s ease;
   box-shadow:
-    0 0 0 1px rgba(139, 149, 168, 0.06),
-    0 30px 60px -30px rgba(0, 0, 0, 0.8);
+    0 0 0 1px rgba(255, 255, 255, 0.03),
+    0 30px 70px -30px rgba(0, 0, 0, 0.95);
 }
 .result::before,
 .result::after {
@@ -438,7 +489,7 @@ textarea:focus {
   position: absolute;
   width: 14px;
   height: 14px;
-  border-color: var(--accent);
+  border-color: #ffffff;
   border-style: solid;
 }
 .result::before {
@@ -458,48 +509,48 @@ textarea:focus {
 
 .copy-btn {
   background: transparent;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-bright);
   border-radius: 3px;
   padding: 6px 12px;
   cursor: pointer;
   font-size: 0.95rem;
-  color: var(--text-dim);
+  color: #ffffff;
   transition: all 0.2s;
 }
 .copy-btn:hover {
-  color: var(--accent-bright);
-  border-color: var(--line-bright);
+  background: var(--card-2);
+  box-shadow: 0 0 15px rgba(255,255,255,0.1);
 }
 
 .result-body {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.95rem;
-  line-height: 2.6;
-  color: var(--text);
+  font-size: 0.98rem;
+  line-height: 2.7;
+  color: #ffffff;
   text-align: center;
   word-wrap: break-word;
   padding-top: 4px;
 }
 .result-body .katex {
-  color: var(--accent-bright);
+  color: #ffffff;
 }
 .result-body .katex-display {
-  margin: 18px 0;
+  margin: 20px 0;
   overflow-x: auto;
   overflow-y: hidden;
 }
 .result-body .katex-display > .katex {
-  text-shadow: 0 0 20px rgba(197, 205, 217, 0.08);
+  text-shadow: 0 0 25px rgba(255, 255, 255, 0.15);
 }
 
 /* ============ خطا ============ */
 .error {
-  background: #17090c;
-  border: 1px solid #3a1418;
-  color: #d88a8a;
+  background: #1a0808;
+  border: 1px solid #4a1818;
+  color: #ff9b9b;
   padding: 16px 20px;
   border-radius: 4px;
-  margin-bottom: 32px;
+  margin-bottom: 28px;
   font-size: 0.88rem;
   font-family: 'JetBrains Mono', monospace;
 }
@@ -510,7 +561,7 @@ footer {
   text-align: center;
   color: var(--text-faint);
   font-size: 0.78rem;
-  letter-spacing: 1.2px;
+  letter-spacing: 1.5px;
   position: relative;
   z-index: 1;
 }
@@ -527,4 +578,8 @@ footer {
   .logo-text { font-size: 1.05rem; letter-spacing: 3px; }
   .tagline { display: none; }
   .card-title { font-size: 1.05rem; letter-spacing: 1.5px; }
+  .engine-btn { padding: 12px 8px; }
+  .eng-icon { font-size: 1.3rem; }
+  .eng-name { font-size: 0.8rem; }
+  .eng-sub { font-size: 0.6rem; }
 }
